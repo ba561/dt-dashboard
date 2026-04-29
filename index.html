@@ -22,7 +22,12 @@ body {
 }
 
 /* Brand */
-.brand { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 40px; }
+.brand { display: flex; align-items: flex-start; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  background: #000;
+  padding: 22px 36px 14px;
+  margin: -32px -36px 32px;
+  border-bottom: 1px solid rgba(255,255,255,0.06); }
 .logo { display: inline-block; line-height: 1; }
 .logo .row1 { font-weight: 800; font-size: 22px; letter-spacing: -0.4px; }
 .logo .row1 sup { font-size: 9px; font-weight: 600; vertical-align: super; margin-left: 2px; opacity: 0.85; }
@@ -104,7 +109,7 @@ body {
 table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
 th, td { padding: 11px 12px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.06); }
 th { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
-  color: rgba(255,255,255,0.42); position: sticky; top: 0; background: #000; }
+  color: rgba(255,255,255,0.42); position: sticky; top: 70px; background: #000; }
 th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
 tr:last-child td { border-bottom: none; }
 tr.forecast td { color: rgba(255,255,255,0.45); font-style: italic; }
@@ -148,7 +153,7 @@ tr.totals td { font-weight: 500; border-top: 1px solid rgba(255,255,255,0.18); p
 table.pnl { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
 table.pnl th, table.pnl td { padding: 11px 12px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.06); }
 table.pnl th { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
-  color: rgba(255,255,255,0.42); position: sticky; top: 0; background: #000; }
+  color: rgba(255,255,255,0.42); position: sticky; top: 70px; background: #000; }
 table.pnl th:first-child, table.pnl td:first-child { text-align: left; }
 table.pnl tr.indent td:first-child { padding-left: 28px; color: rgba(255,255,255,0.7); }
 table.pnl tr.subtotal td { font-weight: 500; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 14px; padding-bottom: 14px; background: rgba(255,255,255,0.02); }
@@ -208,8 +213,10 @@ table.pnl tr.head td.cell-bad { background: rgba(255,122,122,0.18); color: #ff7a
 
 @media (max-width: 900px) {
   body { padding: 24px 18px; }
+  .brand { padding: 16px 18px 12px; margin: -24px -18px 24px; }
   .charts-12, .charts-2 { grid-template-columns: 1fr; }
   .hero h1 { font-size: 44px; letter-spacing: -1.5px; }
+  th { top: 60px !important; }
 }
 </style>
 </head>
