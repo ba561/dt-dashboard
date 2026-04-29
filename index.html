@@ -117,12 +117,74 @@ tr.totals td { font-weight: 500; border-top: 1px solid rgba(255,255,255,0.18); p
 .foot { margin-top: 64px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.08);
   display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.32); letter-spacing: 0.6px; text-transform: uppercase; }
 
+/* View tabs (top of page — Operations / P&L) */
+.view-tabs { display: flex; gap: 6px; margin: 0 0 36px; padding: 4px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 999px; align-self: flex-start; }
+.view-tab { padding: 9px 22px; border: none; border-radius: 999px;
+  background: transparent; color: rgba(255,255,255,0.55); cursor: pointer;
+  font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+  font-family: inherit; transition: background .18s, color .18s; }
+.view-tab:hover { color: #fff; }
+.view-tab.active { background: #fff; color: #000; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* P&L section */
+.pnl-hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px; overflow: hidden; margin-bottom: 44px; }
+.pnl-hero .h-card { background: #000; padding: 22px 24px; min-height: 138px; display: flex; flex-direction: column; }
+.pnl-hero .h-card.feature { background: linear-gradient(155deg, #1a1a1a 0%, #050505 60%); }
+.pnl-hero .h-card .label { font-size: 10px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,0.42); }
+.pnl-hero .h-card .value { margin-top: 12px; font-size: 30px; font-weight: 300; letter-spacing: -1px; line-height: 1.05; }
+.pnl-hero .h-card .value.green { color: #5fd57b; }
+.pnl-hero .h-card .value.red { color: #ff7a7a; }
+.pnl-hero .h-card .deltas { margin-top: auto; padding-top: 14px; font-size: 11px; line-height: 1.7; color: rgba(255,255,255,0.45); }
+.pnl-hero .h-card .deltas .row { display: flex; justify-content: space-between; }
+.pnl-hero .h-card .deltas .row span:first-child { color: rgba(255,255,255,0.4); letter-spacing: 0.3px; }
+
+.pnl-table-wrap { background: #000; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 6px 8px 8px; overflow-x: auto; }
+table.pnl { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+table.pnl th, table.pnl td { padding: 11px 12px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.06); }
+table.pnl th { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+  color: rgba(255,255,255,0.42); position: sticky; top: 0; background: #000; }
+table.pnl th:first-child, table.pnl td:first-child { text-align: left; }
+table.pnl tr.indent td:first-child { padding-left: 28px; color: rgba(255,255,255,0.7); }
+table.pnl tr.subtotal td { font-weight: 500; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 14px; padding-bottom: 14px; background: rgba(255,255,255,0.02); }
+table.pnl tr.subtotal td:first-child { color: #fff; }
+table.pnl tr.total td { font-weight: 600; font-size: 13px; border-top: 1px solid rgba(255,255,255,0.25); border-bottom: 1px solid rgba(255,255,255,0.25); padding-top: 16px; padding-bottom: 16px; background: rgba(255,255,255,0.04); }
+table.pnl tr.total td:first-child { color: #fff; letter-spacing: 0.4px; text-transform: uppercase; font-size: 11px; }
+table.pnl tr.head td { font-weight: 600; font-size: 13px; padding-top: 16px; background: rgba(255,255,255,0.03); }
+table.pnl tr.head td:first-child { color: #fff; letter-spacing: 0.4px; text-transform: uppercase; font-size: 11px; }
+table.pnl tr:last-child td { border-bottom: none; }
+table.pnl .var-pos { color: #5fd57b; }
+table.pnl .var-neg { color: #ff7a7a; }
+table.pnl .var-zero { color: rgba(255,255,255,0.35); }
+
+/* AI Summary block */
+.ai-summary { padding: 28px 30px; border-radius: 14px;
+  background: linear-gradient(155deg, #1a1a1a 0%, #050505 60%);
+  border: 1px solid rgba(255,255,255,0.08); }
+.ai-summary .ai-tag { display: inline-flex; align-items: center; gap: 8px;
+  font-size: 10px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase;
+  color: rgba(255,255,255,0.55); margin-bottom: 18px; }
+.ai-summary .ai-tag .dot { width: 6px; height: 6px; border-radius: 50%;
+  background: #5fd57b; box-shadow: 0 0 8px rgba(95,213,123,0.7); }
+.ai-summary .ai-tag .meta { color: rgba(255,255,255,0.4); font-weight: 400; letter-spacing: 0.4px; text-transform: none; }
+.ai-summary .ai-body { font-size: 14px; line-height: 1.7; color: rgba(255,255,255,0.78); }
+.ai-summary .ai-body p { margin: 0 0 14px; }
+.ai-summary .ai-body p:last-child { margin-bottom: 0; }
+.ai-summary .ai-body b { color: #fff; font-weight: 500; }
+.ai-summary .ai-body .green { color: #5fd57b; font-weight: 500; }
+.ai-summary .ai-body .red { color: #ff7a7a; font-weight: 500; }
+
 /* Export card (matches hero-card design language) */
 .export-card { display: inline-flex; align-items: center; gap: 14px;
   padding: 10px 16px 10px 14px; text-align: left;
   background: linear-gradient(155deg, #1a1a1a 0%, #050505 60%);
   border: 1px solid rgba(255,255,255,0.08); border-radius: 999px;
-  font-family: inherit; color: #fff; cursor: pointer;
+  font-family: inherit; color: #fff; cursor: pointer; text-decoration: none;
   transition: border-color .18s ease, transform .18s ease; }
 .export-card:hover { border-color: rgba(255,255,255,0.22); transform: translateY(-1px); }
 .export-card:active { transform: translateY(0); }
@@ -158,6 +220,12 @@ tr.totals td { font-weight: 500; border-top: 1px solid rgba(255,255,255,0.18); p
   </div>
 </header>
 
+<div class="view-tabs" id="viewTabs">
+  <button class="view-tab active" type="button" data-view="ops">Operations</button>
+  <button class="view-tab" type="button" data-view="pnl">Profit &amp; Loss</button>
+</div>
+
+<div class="view active" id="view-ops">
 <section class="section first">
   <div class="section-head">
     <h2>Изменения с прошлого отчёта</h2>
@@ -266,6 +334,61 @@ tr.totals td { font-weight: 500; border-top: 1px solid rgba(255,255,255,0.18); p
     </div>
   </button>
 </div>
+</div><!-- /#view-ops -->
+
+<div class="view" id="view-pnl">
+  <section class="section first">
+    <div class="section-head">
+      <h2>Сводная аналитика</h2>
+      <div class="meta">AI · сгенерировано на <span id="aiSummaryMetaDate"></span></div>
+    </div>
+    <div class="ai-summary">
+      <div class="ai-tag">
+        <span class="dot"></span>
+        <span>На <span id="aiSummaryReportDate"></span></span>
+      </div>
+      <div class="ai-body" id="aiSummaryBody"></div>
+    </div>
+  </section>
+
+  <div class="hero">
+    <div class="tag">Profit &amp; Loss · DT Group · <span id="pnlPeriod"></span></div>
+    <h1 id="pnlHeroLine"></h1>
+    <div class="hero-sub" id="pnlHeroSub"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>Ключевые показатели · YTD</h2>
+      <div class="meta" id="pnlHeroMeta"></div>
+    </div>
+    <div class="pnl-hero" id="pnlHeroGrid"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>P&amp;L · построчно</h2>
+      <div class="meta">Q1 2026 помесячно · YTD · vs Бюджет</div>
+    </div>
+    <div class="pnl-table-wrap"><table class="pnl" id="pnlTable"></table></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>Источник</h2>
+      <div class="meta">Google Sheets · обновляется ежемесячно</div>
+    </div>
+    <a class="export-card" href="https://docs.google.com/spreadsheets/d/1eBXi-D4NOO2lMvNdeX4Io66IgnbZXKwqsvYXzYfl77I/edit?gid=1138616497#gid=1138616497" target="_blank" rel="noopener noreferrer">
+      <div class="ec-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </div>
+      <div class="ec-text">
+        <span class="ec-title"><span class="accent">Profit &amp; Loss Statement</span> DT Group 2026</span>
+        <span class="ec-meta">Google Sheets</span>
+      </div>
+    </a>
+  </div>
+</div><!-- /#view-pnl -->
 
 <footer class="foot">
   <div>© DeepWhite · Asset Management and Consulting</div>
@@ -325,7 +448,36 @@ const DATA = {
   {"year": 2026, "month": 10, "type": "Forecast", "rev_ttl": 1262126, "bdgt_rev_ttl": 72033734, "y25_rev_ttl": 61557750},
   {"year": 2026, "month": 11, "type": "Forecast", "rev_ttl": 0, "bdgt_rev_ttl": 49994272, "y25_rev_ttl": 42694752},
   {"year": 2026, "month": 12, "type": "Forecast", "rev_ttl": 0, "bdgt_rev_ttl": 37287220, "y25_rev_ttl": 29724881}
-]
+],
+"pnl":{
+  "period":"Q1 2026",
+  "currency":"AMD",
+  "closed_through":"Mar 2026",
+  "source":"Profit & Loss Statement_DT Group 2026 (Google Sheets)",
+  "month_labels":["Jan","Feb","Mar"],
+  "lines":[
+    {"key":"rev_ttl","label":"Total Revenue","type":"head","actual":[38294408,21544821,32529119],"budget":[32304654,26789616,30862085],"ytd":92368348,"ytd_budget":89956355},
+    {"key":"rev_rooms","label":"Rooms Revenue","type":"item","actual":[22609697,10834716,15523287],"budget":[18500000,12430000,15360000],"ytd":48967700,"ytd_budget":46290000},
+    {"key":"rev_fb","label":"F&B Revenue","type":"item","actual":[15043870,10291355,16154165],"budget":[13202187,13893680,14888606],"ytd":41489390,"ytd_budget":41984474},
+    {"key":"rev_other","label":"Other Revenue","type":"item","actual":[640841,418750,851666],"budget":[602466,465936,613479],"ytd":1911258,"ytd_budget":1681881},
+    {"key":"dept_exp","label":"Total Departmental Expense","type":"subtotal","actual":[31804638,24969748,29099308],"budget":[25614910,26818323,28924409],"ytd":85873695,"ytd_budget":81357642,"sign":-1},
+    {"key":"dept_profit","label":"Departmental Profit","type":"subtotal","actual":[6489770,-3424927,3429811],"budget":[6689744,-28707,1937676],"ytd":6494653,"ytd_budget":8598713},
+    {"key":"ag","label":"A&G (Administrative & General)","type":"item","actual":[4671156,5011693,4586968],"budget":[4456717,4312466,4540349],"ytd":14269817,"ytd_budget":13309531,"sign":-1},
+    {"key":"it","label":"IT (Information & Telecom)","type":"item","actual":[342454,339015,350738],"budget":[251783,539018,243347],"ytd":1032208,"ytd_budget":1034148,"sign":-1},
+    {"key":"sm","label":"S&M (Sales & Marketing)","type":"item","actual":[2275059,2598415,1769840],"budget":[2229991,2192011,2217331],"ytd":6643315,"ytd_budget":6639333,"sign":-1},
+    {"key":"pomec","label":"POMEC (Property Ops & Maint.)","type":"item","actual":[866549,791278,291100],"budget":[943000,943000,943000],"ytd":1948926,"ytd_budget":2829000,"sign":-1},
+    {"key":"util","label":"Utilities","type":"item","actual":[6256595,4484410,4720938],"budget":[4312213,4112624,3875326],"ytd":15461943,"ytd_budget":12300164,"sign":-1},
+    {"key":"undist","label":"Total Undistributed Operating Expenses","type":"subtotal","actual":[14411813,13224811,11719584],"budget":[12193704,12099119,11819353],"ytd":39356209,"ytd_budget":36112176,"sign":-1},
+    {"key":"gop","label":"Gross Operating Profit","type":"subtotal","actual":[-7922043,-16649738,-8289773],"budget":[-5503960,-12127826,-9881677],"ytd":-32861556,"ytd_budget":-27513463},
+    {"key":"nonop","label":"Non-Operating Expenses (Ownership)","type":"item","actual":[5474867,5526535,3743200],"budget":[5474867,5526535,3743200],"ytd":14744602,"ytd_budget":14744602,"sign":-1,"budget_assumed":true},
+    {"key":"ebitda","label":"EBITDA","type":"total","actual":[-13396910,-22176273,-12032973],"budget":[-10978827,-17654361,-13624877],"ytd":-47606158,"ytd_budget":-42258065}
+  ]
+},
+"ai_summary":{
+  "generated_at":"2026-04-29",
+  "report_date_label":"28 апреля 2026 (вторник)",
+  "body":"<p><b>Текущий день.</b> 28 апреля (Вт) принёс <b>2,05 млн AMD</b> выручки при загрузке 68,75% (22 номера из 32). ADR 58 159 AMD. F&B вырос до 736 K vs 60 K годом ранее — рост в 12× за счёт банкетной активности; Rooms 1,28 млн vs 128 K в 2025.</p><p><b>MTD за апрель.</b> Накопленная выручка <b>47,3 млн AMD</b>: <span class='green'>+8,8% к плану</span>, <span class='green'>+30,3% vs 2025</span>. Главный драйвер роста — Rooms (+7,6 млн vs 2025) и F&B (+2,1 млн). Прогноз закрыть месяц над планом.</p><p><b>Контекст Q1 P&L.</b> Выручка квартала 92,4 млн (+2,7% к плану), но <span class='red'>GOP −32,9 млн</span> (на 5,3 млн хуже плана) — перерасход по Utilities (<span class='red'>+25,7%</span> к бюджету), Guest Supplies и Vehicle Fuel. <b>EBITDA −47,6 млн</b> vs план −42,3 млн, <span class='red'>исполнение 112,7%</span>.</p><p><b>Что смотреть.</b> Апрель выправляет картину Q1, но годовое EBITDA-восстановление зависит от пика июнь-сентябрь — эти 4 месяца должны принести ≥350 млн выручки. Пока forecast по июль-август значительно ниже плана; стоит закладывать расходную дисциплину уже сейчас.</p>"
+}
 };
 
 // ===== Formatters =====
@@ -642,25 +794,22 @@ new Chart(document.getElementById('chartRate'), {
 const months = DATA.months;
 const monthShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 new Chart(document.getElementById('chartYear'), {
-  type: 'bar',
+  type: 'line',
   data: { labels: months.map(m => monthShort[m.month-1]), datasets: [
-    { label: '2026', data: months.map(m => m.rev_ttl), borderRadius: 2, borderSkipped: false,
-      backgroundColor: function(ctx) {
-        const chart = ctx.chart;
-        const {ctx: c, chartArea} = chart;
-        if (!chartArea) return 'rgba(255,255,255,0.5)';
-        const m = months[ctx.dataIndex];
-        if (m.type === 'Forecast') {
-          const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-          g.addColorStop(0, 'rgba(255,255,255,0.42)'); g.addColorStop(1, 'rgba(255,255,255,0.04)');
-          return g;
-        }
-        return makeBarGradient(c, chartArea);
+    { label: '2026', data: months.map(m => m.rev_ttl),
+      borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.06)',
+      borderWidth: 2, tension: 0.3,
+      pointRadius: ctx => (months[ctx.dataIndex] && months[ctx.dataIndex].type === 'Actual') ? 3 : 0,
+      pointHoverRadius: 5, pointBackgroundColor: '#fff', pointBorderColor: '#fff',
+      fill: true,
+      segment: {
+        borderDash: ctx => months[ctx.p1DataIndex].type === 'Forecast' ? [5,4] : undefined,
+        borderColor: ctx => months[ctx.p1DataIndex].type === 'Forecast' ? 'rgba(255,255,255,0.55)' : '#fff'
       }
     },
-    { label: 'Бюджет', type: 'line', data: months.map(m => m.bdgt_rev_ttl),
+    { label: 'Бюджет', data: months.map(m => m.bdgt_rev_ttl),
       borderColor: 'rgba(255,255,255,0.6)', borderWidth: 1.5, pointRadius: 0, tension: 0.25, fill: false },
-    { label: '2025', type: 'line', data: months.map(m => m.y25_rev_ttl),
+    { label: '2025', data: months.map(m => m.y25_rev_ttl),
       borderColor: 'rgba(255,255,255,0.32)', borderWidth: 1.5, borderDash: [4,3], pointRadius: 0, tension: 0.25, fill: false }
   ]},
   options: {
@@ -956,6 +1105,150 @@ document.querySelectorAll('#tableTabs .tab').forEach(t => {
   }
 
   document.getElementById('exportBtn').addEventListener('click', exportXlsx);
+})();
+
+// ===== View tabs (Operations / P&L) ===== //
+(function() {
+  const tabs = document.querySelectorAll('#viewTabs .view-tab');
+  const views = { ops: document.getElementById('view-ops'), pnl: document.getElementById('view-pnl') };
+  tabs.forEach(t => t.addEventListener('click', () => {
+    const v = t.dataset.view;
+    tabs.forEach(x => x.classList.toggle('active', x === t));
+    Object.keys(views).forEach(k => views[k].classList.toggle('active', k === v));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }));
+})();
+
+// ===== AI Summary render ===== //
+(function() {
+  const ai = DATA.ai_summary;
+  if (!ai) return;
+  const bodyEl = document.getElementById('aiSummaryBody');
+  if (bodyEl) bodyEl.innerHTML = ai.body || '';
+  const repEl = document.getElementById('aiSummaryReportDate');
+  if (repEl) repEl.textContent = ai.report_date_label || DATA.report_date || '';
+  const metaEl = document.getElementById('aiSummaryMetaDate');
+  if (metaEl) {
+    const d = ai.generated_at || DATA.report_date || '';
+    metaEl.textContent = (function(){ if(!d) return '—'; const [y,m,dd]=d.split('-').map(Number); return `${String(dd).padStart(2,'0')}.${String(m).padStart(2,'0')}.${y}`; })();
+  }
+})();
+
+// ===== P&L render ===== //
+(function() {
+  const pnl = DATA.pnl;
+  if (!pnl) return;
+
+  document.getElementById('pnlPeriod').textContent = pnl.period;
+  document.getElementById('pnlHeroMeta').textContent = 'Закрыто по ' + pnl.closed_through + ' · ' + pnl.currency;
+
+  // Find lines
+  const byKey = {};
+  pnl.lines.forEach(l => byKey[l.key] = l);
+  const rev = byKey.rev_ttl, gop = byKey.gop, dp = byKey.dept_profit, de = byKey.dept_exp, un = byKey.undist;
+
+  // Hero line
+  const gopVar = gop.ytd - gop.ytd_budget;
+  const gopColor = gop.ytd >= 0 ? 'green' : 'red';
+  const gopVarColor = gopVar >= 0 ? '#5fd57b' : '#ff7a7a';
+  document.getElementById('pnlHeroLine').innerHTML =
+    `<span class="accent">Operating Result YTD</span><br>` +
+    `<span class="${gopColor}">${fmtMln(gop.ytd)}</span> ` +
+    `<span style="color:${gopVarColor};font-size:0.5em;letter-spacing:-0.5px;">${gopVar>=0?'+':''}${fmtMln(gopVar)} vs Budget</span>`;
+  document.getElementById('pnlHeroSub').textContent =
+    `Q1 2026: выручка ${fmtMln(rev.ytd)} (${rev.ytd>=rev.ytd_budget?'+':''}${fmtMln(rev.ytd-rev.ytd_budget)} vs Budget); расходы ${fmtMln(de.ytd+un.ytd)}; результат до D&A — ${fmtMln(gop.ytd)}.`;
+
+  // Hero cards
+  const ebitda = byKey.ebitda, nonop = byKey.nonop;
+  function makeHeroCard(label, val, budget, opts={}) {
+    const valCls = opts.signedValue ? (val >= 0 ? 'green' : 'red') : '';
+    let footer = '';
+    if (budget == null) {
+      footer = `<div class="deltas">
+        <div class="row"><span>${opts.note || 'Budget'}</span><span class="delta-zero">—</span></div>
+      </div>`;
+    } else {
+      const dv = val - budget;
+      const cls = opts.invert ? (dv <= 0 ? 'delta-pos' : 'delta-neg') : (dv >= 0 ? 'delta-pos' : 'delta-neg');
+      const sign = dv >= 0 ? '+' : '';
+      footer = `<div class="deltas">
+        <div class="row"><span>Budget YTD</span><span>${fmtMln(budget)}</span></div>
+        <div class="row"><span>vs Budget</span><span class="${cls}">${sign}${fmtMln(dv)}</span></div>
+      </div>`;
+    }
+    return `<div class="h-card ${opts.feature?'feature':''}">
+      <div class="label">${label}</div>
+      <div class="value ${valCls}">${fmtMln(val)}</div>
+      ${footer}
+    </div>`;
+  }
+  function makeEbitdaCard(actual, budget) {
+    const isLoss = budget < 0;
+    const dv = actual - budget;
+    const better = dv >= 0;
+    const varCls = better ? 'delta-pos' : 'delta-neg';
+    const pct = budget !== 0 ? (actual / budget) * 100 : 0;
+    // For losses (budget<0): pct > 100% means actual loss is bigger than planned → bad
+    const pctBetter = isLoss ? pct <= 100 : pct >= 100;
+    const pctCls = pctBetter ? 'delta-pos' : 'delta-neg';
+    const valCls = actual >= 0 ? 'green' : 'red';
+    const sign = dv >= 0 ? '+' : '';
+    return `<div class="h-card">
+      <div class="label">EBITDA</div>
+      <div class="value ${valCls}">${fmtMln(actual)}</div>
+      <div class="deltas">
+        <div class="row"><span>План YTD</span><span>${fmtMln(budget)}</span></div>
+        <div class="row"><span>vs План</span><span class="${varCls}">${sign}${fmtMln(dv)}</span></div>
+        <div class="row"><span>% исполнения</span><span class="${pctCls}">${pct.toFixed(1)}%</span></div>
+      </div>
+    </div>`;
+  }
+  document.getElementById('pnlHeroGrid').innerHTML = [
+    makeHeroCard('Total Revenue YTD', rev.ytd, rev.ytd_budget, {feature: true}),
+    makeHeroCard('Departmental Expense', de.ytd, de.ytd_budget, {invert: true}),
+    makeHeroCard('Departmental Profit', dp.ytd, dp.ytd_budget, {signedValue: true}),
+    makeHeroCard('Gross Operating Profit', gop.ytd, gop.ytd_budget, {signedValue: true}),
+    makeEbitdaCard(ebitda.ytd, ebitda.ytd_budget),
+  ].join('');
+
+  // P&L table
+  const months = pnl.month_labels;
+  let head = '<thead><tr><th>Статья</th>';
+  months.forEach(m => { head += `<th>${m}</th>`; });
+  head += `<th>YTD</th><th>Budget YTD</th><th>vs Budget</th></tr></thead>`;
+
+  const fmtCell = (v, neg=false) => {
+    if (v == null) return '<td>—</td>';
+    return `<td>${fmtAMD(neg ? -v : v)}</td>`;
+  };
+  const fmtVarCell = (actual, budget, isExpense=false) => {
+    if (actual == null || budget == null) return '<td class="var-zero">—</td>';
+    const dv = actual - budget;
+    let cls;
+    if (Math.abs(dv) < 1) cls = 'var-zero';
+    else if (isExpense) cls = dv <= 0 ? 'var-pos' : 'var-neg';
+    else cls = dv >= 0 ? 'var-pos' : 'var-neg';
+    const sign = dv >= 0 ? '+' : '';
+    return `<td class="${cls}">${sign}${fmtAMD(dv)}</td>`;
+  };
+
+  let body = '<tbody>';
+  pnl.lines.forEach(line => {
+    const isExpense = line.sign === -1;
+    const cls = line.type === 'head' ? 'head'
+      : line.type === 'subtotal' ? 'subtotal'
+      : line.type === 'total' ? 'total'
+      : 'indent';
+    body += `<tr class="${cls}"><td>${line.label}</td>`;
+    line.actual.forEach(v => { body += fmtCell(v); });
+    body += fmtCell(line.ytd);
+    body += fmtCell(line.ytd_budget);
+    body += fmtVarCell(line.ytd, line.ytd_budget, isExpense);
+    body += '</tr>';
+  });
+  body += '</tbody>';
+
+  document.getElementById('pnlTable').innerHTML = head + body;
 })();
 </script>
 </body>
