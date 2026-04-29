@@ -162,6 +162,12 @@ table.pnl .var-pos { color: #5fd57b; }
 table.pnl .var-neg { color: #ff7a7a; }
 table.pnl .var-zero { color: rgba(255,255,255,0.35); }
 
+/* Bad cells — actual worse than budget (per-month or YTD) */
+table.pnl td.cell-bad { background: rgba(255,122,122,0.10); color: #ff8a8a; font-weight: 500; }
+table.pnl tr.subtotal td.cell-bad,
+table.pnl tr.total td.cell-bad,
+table.pnl tr.head td.cell-bad { background: rgba(255,122,122,0.18); color: #ff7a7a; }
+
 /* AI Summary block */
 .ai-summary { padding: 28px 30px; border-radius: 14px;
   background: linear-gradient(155deg, #1a1a1a 0%, #050505 60%);
@@ -363,6 +369,35 @@ table.pnl .var-zero { color: rgba(255,255,255,0.35); }
       <div class="meta" id="pnlHeroMeta"></div>
     </div>
     <div class="pnl-hero" id="pnlHeroGrid"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>Структура P&amp;L · YTD</h2>
+      <div class="meta">Каскад выручки → расходов → итог</div>
+    </div>
+    <div class="charts-12">
+      <div class="chart-card">
+        <h3>P&amp;L Cascade · Q1 2026</h3>
+        <div class="subhead" id="pnlWaterfallHead"></div>
+        <div class="chart-wrap tall"><canvas id="chartPnlWaterfall"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Структура выручки</h3>
+        <div class="subhead" id="pnlMixHead"></div>
+        <div class="chart-wrap tall"><canvas id="chartPnlMix"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>План vs факт · помесячно</h2>
+      <div class="meta">Q1 2026 · Total Revenue (бары) и GOP (линия)</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-wrap tall"><canvas id="chartPnlPlanFact"></canvas></div>
+    </div>
   </div>
 
   <div class="section">
@@ -1217,19 +1252,32 @@ document.querySelectorAll('#tableTabs .tab').forEach(t => {
   months.forEach(m => { head += `<th>${m}</th>`; });
   head += `<th>YTD</th><th>Budget YTD</th><th>vs Budget</th></tr></thead>`;
 
-  const fmtCell = (v, neg=false) => {
+  const fmtCell = (v) => {
     if (v == null) return '<td>—</td>';
-    return `<td>${fmtAMD(neg ? -v : v)}</td>`;
+    return `<td>${fmtAMD(v)}</td>`;
+  };
+  // Cell with bad-vs-budget detection (used for actual and YTD cells)
+  const fmtActualCell = (actual, budget, isExpense) => {
+    if (actual == null) return '<td>—</td>';
+    let cls = '';
+    if (budget != null && budget !== 0) {
+      const dv = actual - budget;
+      const wrong = isExpense ? dv > 0 : dv < 0;
+      if (wrong && Math.abs(dv / budget) >= 0.01) cls = 'cell-bad';
+    }
+    return `<td class="${cls}">${fmtAMD(actual)}</td>`;
   };
   const fmtVarCell = (actual, budget, isExpense=false) => {
     if (actual == null || budget == null) return '<td class="var-zero">—</td>';
     const dv = actual - budget;
-    let cls;
-    if (Math.abs(dv) < 1) cls = 'var-zero';
-    else if (isExpense) cls = dv <= 0 ? 'var-pos' : 'var-neg';
-    else cls = dv >= 0 ? 'var-pos' : 'var-neg';
+    if (Math.abs(dv) < 1) return `<td class="var-zero">${fmtAMD(dv)}</td>`;
+    const wrongDirection = isExpense ? dv > 0 : dv < 0;
+    const cls = wrongDirection ? 'var-neg' : 'var-pos';
+    // Add red bg tint when variance is materially bad (≥1% of budget), same treatment as bad actual cells
+    const isMaterial = budget !== 0 && Math.abs(dv / budget) >= 0.01;
+    const extra = wrongDirection && isMaterial ? ' cell-bad' : '';
     const sign = dv >= 0 ? '+' : '';
-    return `<td class="${cls}">${sign}${fmtAMD(dv)}</td>`;
+    return `<td class="${cls}${extra}">${sign}${fmtAMD(dv)}</td>`;
   };
 
   let body = '<tbody>';
@@ -1240,8 +1288,10 @@ document.querySelectorAll('#tableTabs .tab').forEach(t => {
       : line.type === 'total' ? 'total'
       : 'indent';
     body += `<tr class="${cls}"><td>${line.label}</td>`;
-    line.actual.forEach(v => { body += fmtCell(v); });
-    body += fmtCell(line.ytd);
+    line.actual.forEach((v, i) => {
+      body += fmtActualCell(v, (line.budget && line.budget[i] != null) ? line.budget[i] : null, isExpense);
+    });
+    body += fmtActualCell(line.ytd, line.ytd_budget, isExpense);
     body += fmtCell(line.ytd_budget);
     body += fmtVarCell(line.ytd, line.ytd_budget, isExpense);
     body += '</tr>';
@@ -1249,6 +1299,133 @@ document.querySelectorAll('#tableTabs .tab').forEach(t => {
   body += '</tbody>';
 
   document.getElementById('pnlTable').innerHTML = head + body;
+
+  // ===== P&L Charts =====
+  const M = 1e6; // millions
+  const pnlTooltip = { backgroundColor: '#0a0a0a', borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1, padding: 10 };
+
+  // Subhead labels
+  document.getElementById('pnlWaterfallHead').innerHTML = `<span class="accent">EBITDA YTD</span> · ${fmtMln(ebitda.ytd)}`;
+  document.getElementById('pnlMixHead').innerHTML = `<span class="accent">Total YTD</span> · ${fmtMln(rev.ytd)}`;
+
+  // 1) P&L Cascade (waterfall)
+  const undist = byKey.undist;
+  const cascadeLabels = ['Revenue', 'Dept Exp', 'Dept Profit', 'Undist OpEx', 'GOP', 'Non-Op', 'EBITDA'];
+  const cascadeData = [
+    [0, rev.ytd / M],
+    [(rev.ytd - de.ytd) / M, rev.ytd / M],
+    [Math.min(0, dp.ytd / M), Math.max(0, dp.ytd / M)],
+    [(dp.ytd - undist.ytd) / M, dp.ytd / M],
+    [Math.min(0, gop.ytd / M), Math.max(0, gop.ytd / M)],
+    [(gop.ytd - nonop.ytd) / M, gop.ytd / M],
+    [Math.min(0, ebitda.ytd / M), Math.max(0, ebitda.ytd / M)]
+  ];
+  const cascadeRoles = ['rev','exp','sub','exp','sub','exp','sub']; // role per bar
+  const cascadeDeltas = [rev.ytd, -de.ytd, dp.ytd, -undist.ytd, gop.ytd, -nonop.ytd, ebitda.ytd];
+
+  new Chart(document.getElementById('chartPnlWaterfall'), {
+    type: 'bar',
+    data: { labels: cascadeLabels, datasets: [{
+      label: 'YTD',
+      data: cascadeData,
+      backgroundColor: ctx => {
+        const r = cascadeRoles[ctx.dataIndex];
+        if (r === 'rev') return 'rgba(95,213,123,0.45)';
+        if (r === 'exp') return 'rgba(255,122,122,0.42)';
+        return 'rgba(255,255,255,0.32)';
+      },
+      borderColor: ctx => {
+        const r = cascadeRoles[ctx.dataIndex];
+        if (r === 'rev') return '#5fd57b';
+        if (r === 'exp') return '#ff7a7a';
+        return 'rgba(255,255,255,0.55)';
+      },
+      borderWidth: 1, borderRadius: 3, borderSkipped: false
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...pnlTooltip, callbacks: {
+          title: items => items[0].label,
+          label: ctx => {
+            const v = cascadeDeltas[ctx.dataIndex];
+            const sign = v >= 0 ? '+' : '−';
+            return `${sign}${fmtAMD(Math.abs(v))} AMD`;
+          }
+        }}
+      },
+      scales: {
+        y: { ticks: { callback: v => v.toFixed(0) + ' млн', color: 'rgba(255,255,255,0.4)', font: { size: 10 } },
+          grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false } },
+        x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.55)', font: { size: 10, weight: '500' }, maxRotation: 0, autoSkip: false }, border: { color: 'rgba(255,255,255,0.1)' } }
+      }
+    }
+  });
+
+  // 2) Revenue Mix Donut YTD
+  new Chart(document.getElementById('chartPnlMix'), {
+    type: 'doughnut',
+    data: { labels: ['Rooms', 'F&B', 'Other'], datasets: [{
+      data: [byKey.rev_rooms.ytd, byKey.rev_fb.ytd, byKey.rev_other.ytd],
+      backgroundColor: ['rgba(255,255,255,0.92)', 'rgba(255,255,255,0.5)', 'rgba(255,255,255,0.22)'],
+      borderColor: '#000', borderWidth: 3
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '68%',
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 8, boxHeight: 8, font: { size: 11 }, color: 'rgba(255,255,255,0.55)' } },
+        tooltip: { ...pnlTooltip, callbacks: {
+          label: ctx => {
+            const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+            return ctx.label + ': ' + fmtMln(ctx.parsed) + ' (' + (ctx.parsed/total*100).toFixed(1) + '%)';
+          }
+        }}
+      }
+    }
+  });
+
+  // 3) Plan vs Fact monthly (Revenue bars + GOP line + Budget Revenue line)
+  new Chart(document.getElementById('chartPnlPlanFact'), {
+    type: 'bar',
+    data: {
+      labels: pnl.month_labels,
+      datasets: [
+        { label: 'Revenue · План', type: 'bar',
+          data: rev.budget.map(v => v / M),
+          backgroundColor: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.5)',
+          borderWidth: 1, borderRadius: 2, borderSkipped: false, order: 3 },
+        { label: 'Revenue · Факт', type: 'bar',
+          data: rev.actual.map(v => v / M),
+          backgroundColor: 'rgba(255,255,255,0.85)', borderColor: '#fff',
+          borderWidth: 1, borderRadius: 2, borderSkipped: false, order: 3 },
+        { label: 'GOP · Факт', type: 'line',
+          data: gop.actual.map(v => v / M),
+          borderColor: '#ff7a7a', backgroundColor: 'rgba(255,122,122,0.08)',
+          borderWidth: 2, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#ff7a7a',
+          fill: false, order: 1 },
+        { label: 'GOP · План', type: 'line',
+          data: gop.budget.map(v => v / M),
+          borderColor: 'rgba(255,122,122,0.5)', borderWidth: 1.5,
+          borderDash: [4,3], tension: 0.3, pointRadius: 0, fill: false, order: 2 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 8, boxHeight: 8, font: { size: 11 }, color: 'rgba(255,255,255,0.55)' } },
+        tooltip: { ...pnlTooltip, callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y >= 0 ? '+' : '−'}${Math.abs(ctx.parsed.y).toFixed(1)} млн`
+        }}
+      },
+      scales: {
+        y: { ticks: { callback: v => v.toFixed(0) + ' млн', color: 'rgba(255,255,255,0.4)', font: { size: 10 } },
+          grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false } },
+        x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.55)', font: { size: 10, weight: '500' } }, border: { color: 'rgba(255,255,255,0.1)' } }
+      }
+    }
+  });
 })();
 </script>
 </body>
