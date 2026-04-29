@@ -1,0 +1,962 @@
+<!DOCTYPE html><script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Dt Daily Dashboard",
+  "schemaVersion": 1,
+  "description": "Daily dashboard for Dilijan Tun (DT) hotel — Room/F&B/Other revenue with vs Budget, vs 2025, vs 2024 comparisons. Dark TMS-style design with DeepWhite branding. Source: DT - CorpFile.xlsx (28.04.2026)."
+}
+</script>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>DT — Financial Dashboard</title>
+<style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { background: #000; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin: 0; padding: 32px 36px 56px;
+  background: #000; color: #fff;
+  font-feature-settings: "ss01", "tnum";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Brand */
+.brand { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 40px; }
+.logo { display: inline-block; line-height: 1; }
+.logo .row1 { font-weight: 800; font-size: 22px; letter-spacing: -0.4px; }
+.logo .row1 sup { font-size: 9px; font-weight: 600; vertical-align: super; margin-left: 2px; opacity: 0.85; }
+.logo .row2 { font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.55); margin-top: 4px; letter-spacing: 0.2px; }
+.report-meta { text-align: right; font-size: 11px; color: rgba(255,255,255,0.42); line-height: 1.55; letter-spacing: 0.4px; text-transform: uppercase; }
+.report-meta .reportdate { color: rgba(255,255,255,0.78); font-weight: 500; }
+
+/* Tag/section labels */
+.tag { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-bottom: 14px; }
+
+/* Hero */
+.hero { margin: 0 0 44px; }
+.hero h1 { margin: 0; font-size: clamp(40px, 6.5vw, 84px); font-weight: 300; letter-spacing: -2.5px; line-height: 0.96; }
+.hero h1 .accent { color: rgba(255,255,255,0.42); font-weight: 300; }
+.hero h1 .green { color: #5fd57b; }
+.hero h1 .red { color: #ff7a7a; }
+.hero-sub { margin-top: 14px; font-size: 14px; color: rgba(255,255,255,0.5); max-width: 640px; line-height: 1.5; }
+
+.section { margin-top: 56px; }
+.section.first { margin-top: 0; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 8px; }
+.section-head h2 { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+.section-head .meta { font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 0.4px; }
+.section-head .meta .arrow { color: rgba(255,255,255,0.32); margin: 0 6px; }
+.section-head .meta .from { color: rgba(255,255,255,0.5); }
+.section-head .meta .to { color: rgba(255,255,255,0.85); font-weight: 500; }
+
+/* Synthetic notice */
+.notice { margin: -8px 0 18px; padding: 10px 14px; border-radius: 10px;
+  background: rgba(212,160,23,0.08); border: 1px solid rgba(212,160,23,0.22);
+  font-size: 11px; color: rgba(255,236,180,0.85); letter-spacing: 0.2px; line-height: 1.55; }
+.notice strong { color: #f5c750; font-weight: 600; }
+
+/* Compare cards (Изменения с прошлого отчёта) */
+.compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(225px, 1fr));
+  gap: 1px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px; overflow: hidden; }
+.compare-card { background: #000; padding: 20px 20px 18px; min-height: 138px; display: flex; flex-direction: column; }
+.compare-card .label { font-size: 10px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,0.42); }
+.compare-card .nums { display: flex; align-items: baseline; gap: 14px; margin-top: 12px; }
+.compare-card .prev { font-size: 14px; color: rgba(255,255,255,0.42); font-weight: 400; letter-spacing: -0.3px; text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.18); }
+.compare-card .arrow { color: rgba(255,255,255,0.3); font-size: 14px; }
+.compare-card .current { font-size: 24px; font-weight: 300; letter-spacing: -0.6px; }
+.compare-card .change { margin-top: auto; padding-top: 12px; font-size: 12px; font-weight: 500; }
+.compare-card .change .pct { font-weight: 600; margin-left: 4px; }
+.compare-card.hero-card { background: linear-gradient(155deg, #1a1a1a 0%, #050505 60%); }
+
+/* Generic cards */
+.grid { display: grid; gap: 1px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; overflow: hidden; }
+.cards { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.card { background: #000; padding: 22px 22px 20px; min-height: 132px; }
+.card.hero-card { background: linear-gradient(155deg, #1a1a1a 0%, #050505 60%); }
+.card .label { font-size: 10px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,0.42); }
+.card .value { margin-top: 10px; font-size: 30px; font-weight: 300; letter-spacing: -1px; line-height: 1.05; }
+.card .deltas { margin-top: 14px; font-size: 11px; line-height: 1.7; color: rgba(255,255,255,0.45); }
+.card .deltas .row { display: flex; justify-content: space-between; }
+.card .deltas .row span:first-child { color: rgba(255,255,255,0.4); letter-spacing: 0.3px; }
+.delta-pos { color: #5fd57b; font-weight: 500; }
+.delta-neg { color: #ff7a7a; font-weight: 500; }
+.delta-zero { color: rgba(255,255,255,0.4); }
+
+.charts-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.charts-12 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+.chart-card { background: #000; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 22px 22px 16px; }
+.chart-card h3 { margin: 0 0 4px; font-size: 11px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,0.42); }
+.chart-card .subhead { font-size: 26px; font-weight: 300; letter-spacing: -0.6px; margin-bottom: 18px; line-height: 1.1; }
+.chart-card .subhead .accent { color: rgba(255,255,255,0.42); }
+.chart-wrap { position: relative; height: 280px; }
+.chart-wrap.tall { height: 340px; }
+
+.tabs { display: flex; gap: 6px; margin: 24px 0 14px; flex-wrap: wrap; }
+.tab { padding: 7px 14px; border: 1px solid rgba(255,255,255,0.12); border-radius: 999px;
+  background: transparent; color: rgba(255,255,255,0.55); cursor: pointer;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.3px; transition: all .15s; }
+.tab:hover { color: #fff; border-color: rgba(255,255,255,0.32); }
+.tab.active { background: #fff; color: #000; border-color: #fff; }
+
+.table-wrap { background: #000; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 6px 8px 8px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+th, td { padding: 11px 12px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.06); }
+th { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+  color: rgba(255,255,255,0.42); position: sticky; top: 0; background: #000; }
+th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+tr:last-child td { border-bottom: none; }
+tr.forecast td { color: rgba(255,255,255,0.45); font-style: italic; }
+tr.weekend td { background: rgba(255,255,255,0.02); }
+tr.totals td { font-weight: 500; border-top: 1px solid rgba(255,255,255,0.18); padding-top: 14px; padding-bottom: 14px; }
+.chip { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 9px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; }
+.chip-actual { background: rgba(95,213,123,0.13); color: #5fd57b; }
+.chip-forecast { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); }
+
+.foot { margin-top: 64px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.32); letter-spacing: 0.6px; text-transform: uppercase; }
+
+/* Export card (matches hero-card design language) */
+.export-card { display: inline-flex; align-items: center; gap: 14px;
+  padding: 10px 16px 10px 14px; text-align: left;
+  background: linear-gradient(155deg, #1a1a1a 0%, #050505 60%);
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 999px;
+  font-family: inherit; color: #fff; cursor: pointer;
+  transition: border-color .18s ease, transform .18s ease; }
+.export-card:hover { border-color: rgba(255,255,255,0.22); transform: translateY(-1px); }
+.export-card:active { transform: translateY(0); }
+.export-card:disabled { opacity: 0.55; cursor: progress; transform: none; }
+.export-card .ec-icon { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.65);
+  transition: background .18s ease, color .18s ease, border-color .18s ease; }
+.export-card:hover .ec-icon { background: #fff; color: #000; border-color: #fff; }
+.export-card .ec-icon svg { width: 14px; height: 14px; stroke-width: 2; }
+.export-card .ec-text { display: inline-flex; align-items: baseline; gap: 8px; }
+.export-card .ec-title { font-size: 13px; font-weight: 500; letter-spacing: 0.1px; color: #fff; }
+.export-card .ec-title .accent { color: rgba(255,255,255,0.42); font-weight: 400; }
+.export-card .ec-meta { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 0.6px; text-transform: uppercase; }
+
+@media (max-width: 900px) {
+  body { padding: 24px 18px; }
+  .charts-12, .charts-2 { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 44px; letter-spacing: -1.5px; }
+}
+</style>
+</head>
+<body>
+
+<header class="brand">
+  <div class="logo">
+    <div class="row1">DeepWhite<sup>TM</sup></div>
+    <div class="row2">Asset Management and Consulting</div>
+  </div>
+  <div class="report-meta">
+    <div>Dilijan Tun · Daily Report</div>
+    <div class="reportdate" id="reportDateLabel"></div>
+  </div>
+</header>
+
+<section class="section first">
+  <div class="section-head">
+    <h2>Изменения с прошлого отчёта</h2>
+    <div class="meta" id="prevReportMeta"></div>
+  </div>
+  <div id="changesNotice"></div>
+  <div class="compare-grid" id="compareGrid"></div>
+</section>
+
+<div class="hero">
+  <div class="tag">Total Revenue · <span id="heroDate"></span></div>
+  <h1 id="heroLine"></h1>
+  <div class="hero-sub" id="heroSub"></div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Последний день · детализация</h2>
+    <div class="meta" id="dayDateMeta"></div>
+  </div>
+  <div class="grid cards" id="dayCards"></div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Накопительно за месяц</h2>
+    <div class="meta" id="monthLabel"></div>
+  </div>
+  <div class="grid cards" id="mtdCards"></div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Total Revenue · по дням</h2>
+    <div class="meta">Текущий месяц vs 2025 vs 2024</div>
+  </div>
+  <div class="charts-12">
+    <div class="chart-card">
+      <h3>Daily Total Revenue</h3>
+      <div class="subhead" id="dailyHead"></div>
+      <div class="chart-wrap"><canvas id="chartRevDaily"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Mix выручки за месяц</h3>
+      <div class="subhead" id="mixHead"></div>
+      <div class="chart-wrap"><canvas id="chartMix"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Operational metrics · по дням</h2>
+    <div class="meta">2026 vs 2025</div>
+  </div>
+  <div class="charts-2">
+    <div class="chart-card">
+      <h3>Occupancy</h3>
+      <div class="subhead" id="occHead"></div>
+      <div class="chart-wrap"><canvas id="chartOcc"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Average Rate</h3>
+      <div class="subhead" id="rateHead"></div>
+      <div class="chart-wrap"><canvas id="chartRate"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Year View · выручка по месяцам</h2>
+    <div class="meta">Факт + прогноз vs Бюджет vs 2025</div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-wrap tall"><canvas id="chartYear"></canvas></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Detail Table</h2>
+    <div class="meta">День за днём</div>
+  </div>
+  <div class="tabs" id="tableTabs">
+    <div class="tab active" data-view="ttl">Total</div>
+    <div class="tab" data-view="rooms">Rooms</div>
+    <div class="tab" data-view="fb">F&amp;B</div>
+    <div class="tab" data-view="other">Other</div>
+  </div>
+  <div class="table-wrap"><table id="dayTable"></table></div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Экспорт</h2>
+    <div class="meta">Все данные дашборда · 3 листа</div>
+  </div>
+  <button class="export-card" id="exportBtn" type="button">
+    <div class="ec-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </div>
+    <div class="ec-text">
+      <span class="ec-title"><span class="accent">DT —</span> Corpfile.xlsx</span>
+      <span class="ec-meta">.xlsx</span>
+    </div>
+  </button>
+</div>
+
+<footer class="foot">
+  <div>© DeepWhite · Asset Management and Consulting</div>
+  <div>Source: DT — CorpFile.xlsx</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<script>
+const DATA = {
+"report_date":"2026-04-28",
+"month_label":"April 2026",
+"prev_snapshot": null,
+"month":{"rooms": 504, "occ": 0.5081, "rate": 52392, "rev_room": 26405674, "bdgt_rooms": 318, "bdgt_rev_room": 22896000, "vs_bdgt_rooms": 186, "vs_bdgt_rev_room": 3509674, "y25_rev_room": 18760403, "vs25_rev_room": 7645271, "y25_rooms": 279, "y25_occ": 0.2812, "y25_rate": 67242, "y24_rev_room": 10777383, "fb_guests": 1732, "fb_check": 11191, "rev_fb": 19382914, "y25_rev_fb": 17246841, "vs25_rev_fb": 2136072, "rev_oth": 1544554, "y25_rev_oth": 320700, "vs25_rev_oth": 1223854, "rev_ttl": 47333142, "y25_rev_ttl": 36327944, "vs25_rev_ttl": 11005198, "y24_rev_ttl": 20226048, "vs24_rev_ttl": 27107093},
+"latest_day":{"year": 2026, "month": 4, "day": 28, "wd": "Tue", "type": "Actual", "rooms": 22, "occ": 0.6875, "rate": 58159, "rev_room": 1279500, "vs_bdgt_rooms": 11.9, "vs_bdgt_rev_room": 393441, "bdgt_rooms": 10.1, "bdgt_rev_room": 886059, "vs25_rooms": 19, "vs25_rev_room": 1151500, "y25_rooms": 3, "y25_occ": 0.0938, "y25_rate": 42667, "y25_rev_room": 128000, "y24_rev_room": 425833, "fb_guests": 61, "fb_check": 12074, "rev_fb": 736490, "vs25_rev_fb": 676510, "y25_rev_fb": 59980, "rev_oth": 36333, "vs25_rev_oth": 25333, "y25_rev_oth": 11000, "rev_ttl": 2052323, "vs25_rev_ttl": 1853343, "y25_rev_ttl": 198980, "vs24_rev_ttl": 751020, "y24_rev_ttl": 1301303},
+"days":[
+  {"year": 2026, "month": 4, "day": 1, "wd": "Wed", "type": "Actual", "rooms": 16, "occ": 0.5, "rate": 43911, "rev_room": 702569, "vs_bdgt_rooms": 5.9, "vs_bdgt_rev_room": -159532, "bdgt_rooms": 10.1, "bdgt_rev_room": 862101, "vs25_rooms": 11, "vs25_rev_room": 517027, "y25_rooms": 5, "y25_occ": 0.1562, "y25_rate": 37108, "y25_rev_room": 185542, "y24_rev_room": 40500, "fb_guests": 24, "fb_check": 18642, "rev_fb": 447400, "vs25_rev_fb": 203980, "y25_rev_fb": 243420, "rev_oth": 47083, "vs25_rev_oth": 47083, "y25_rev_oth": 0, "rev_ttl": 1197052, "vs25_rev_ttl": 768090, "y25_rev_ttl": 428962, "vs24_rev_ttl": 881442, "y24_rev_ttl": 315610},
+  {"year": 2026, "month": 4, "day": 2, "wd": "Thu", "type": "Actual", "rooms": 17, "occ": 0.5312, "rate": 44850, "rev_room": 762443, "vs_bdgt_rooms": 7.9, "vs_bdgt_rev_room": 140748, "bdgt_rooms": 9.1, "bdgt_rev_room": 621695, "vs25_rooms": 11, "vs25_rev_room": 518562, "y25_rooms": 6, "y25_occ": 0.1875, "y25_rate": 40647, "y25_rev_room": 243881, "y24_rev_room": 97500, "fb_guests": 32, "fb_check": 15526, "rev_fb": 496847, "vs25_rev_fb": 349787, "y25_rev_fb": 147060, "rev_oth": 30833, "vs25_rev_oth": 1667, "y25_rev_oth": 29167, "rev_ttl": 1290123, "vs25_rev_ttl": 870015, "y25_rev_ttl": 420108, "vs24_rev_ttl": 1119843, "y24_rev_ttl": 170280},
+  {"year": 2026, "month": 4, "day": 3, "wd": "Fri", "type": "Actual", "rooms": 30, "occ": 0.9375, "rate": 46333, "rev_room": 1389985, "vs_bdgt_rooms": 18.9, "vs_bdgt_rev_room": 598593, "bdgt_rooms": 11.1, "bdgt_rev_room": 791392, "vs25_rooms": 25, "vs25_rev_room": 914693, "y25_rooms": 5, "y25_occ": 0.1562, "y25_rate": 95058, "y25_rev_room": 475292, "y24_rev_room": 357917, "fb_guests": 50, "fb_check": 9767, "rev_fb": 488350, "vs25_rev_fb": 312127, "y25_rev_fb": 176223, "rev_oth": 19583, "vs25_rev_oth": -250, "y25_rev_oth": 19833, "rev_ttl": 1897918, "vs25_rev_ttl": 1226570, "y25_rev_ttl": 671349, "vs24_rev_ttl": 1441122, "y24_rev_ttl": 456797},
+  {"year": 2026, "month": 4, "day": 4, "wd": "Sat", "type": "Actual", "rooms": 20, "occ": 0.625, "rate": 58446, "rev_room": 1168916, "vs_bdgt_rooms": 3.8, "vs_bdgt_rev_room": 166708, "bdgt_rooms": 16.2, "bdgt_rev_room": 1002208, "vs25_rooms": 16, "vs25_rev_room": 943500, "y25_rooms": 4, "y25_occ": 0.125, "y25_rate": 56354, "y25_rev_room": 225416, "y24_rev_room": 0, "fb_guests": 82, "fb_check": 11565, "rev_fb": 948343, "vs25_rev_fb": 725630, "y25_rev_fb": 222713, "rev_oth": 116167, "vs25_rev_oth": 116167, "y25_rev_oth": 0, "rev_ttl": 2233426, "vs25_rev_ttl": 1785297, "y25_rev_ttl": 448129, "vs24_rev_ttl": 2207246, "y24_rev_ttl": 26180},
+  {"year": 2026, "month": 4, "day": 5, "wd": "Sun", "type": "Actual", "rooms": 12, "occ": 0.375, "rate": 44406, "rev_room": 532875, "vs_bdgt_rooms": 2.9, "vs_bdgt_rev_room": -136419, "bdgt_rooms": 9.1, "bdgt_rev_room": 669294, "vs25_rooms": 3, "vs25_rev_room": -254417, "y25_rooms": 9, "y25_occ": 0.2812, "y25_rate": 87477, "y25_rev_room": 787292, "y24_rev_room": 345208, "fb_guests": 69, "fb_check": 9020, "rev_fb": 622395, "vs25_rev_fb": -280470, "y25_rev_fb": 902865, "rev_oth": 100667, "vs25_rev_oth": 97167, "y25_rev_oth": 3500, "rev_ttl": 1255937, "vs25_rev_ttl": -437720, "y25_rev_ttl": 1693657, "vs24_rev_ttl": 515608, "y24_rev_ttl": 740328},
+  {"year": 2026, "month": 4, "day": 6, "wd": "Mon", "type": "Actual", "rooms": 6, "occ": 0.1875, "rate": 48472, "rev_room": 290833, "vs_bdgt_rooms": -3.1, "vs_bdgt_rev_room": -553580, "bdgt_rooms": 9.1, "bdgt_rev_room": 844413, "vs25_rooms": 5, "vs25_rev_room": 235833, "y25_rooms": 1, "y25_occ": 0.0312, "y25_rate": 55000, "y25_rev_room": 55000, "y24_rev_room": 1617871, "fb_guests": 18, "fb_check": 14404, "rev_fb": 259263, "vs25_rev_fb": -248827, "y25_rev_fb": 508090, "rev_oth": 28500, "vs25_rev_oth": 21667, "y25_rev_oth": 6833, "rev_ttl": 578596, "vs25_rev_ttl": 8673, "y25_rev_ttl": 569923, "vs24_rev_ttl": -2237395, "y24_rev_ttl": 2815991},
+  {"year": 2026, "month": 4, "day": 7, "wd": "Tue", "type": "Actual", "rooms": 13, "occ": 0.4062, "rate": 49394, "rev_room": 642126, "vs_bdgt_rooms": 2.9, "vs_bdgt_rev_room": 86085, "bdgt_rooms": 10.1, "bdgt_rev_room": 556041, "vs25_rooms": 12, "vs25_rev_room": 579209, "y25_rooms": 1, "y25_occ": 0.0312, "y25_rate": 62917, "y25_rev_room": 62917, "y24_rev_room": 681954, "fb_guests": 50, "fb_check": 10859, "rev_fb": 542960, "vs25_rev_fb": 288197, "y25_rev_fb": 254763, "rev_oth": 24000, "vs25_rev_oth": 49000, "y25_rev_oth": -25000, "rev_ttl": 1209086, "vs25_rev_ttl": 916406, "y25_rev_ttl": 292680, "vs24_rev_ttl": -135398, "y24_rev_ttl": 1344484},
+  {"year": 2026, "month": 4, "day": 8, "wd": "Wed", "type": "Actual", "rooms": 7, "occ": 0.2188, "rate": 36107, "rev_room": 252750, "vs_bdgt_rooms": -3.1, "vs_bdgt_rev_room": -466553, "bdgt_rooms": 10.1, "bdgt_rev_room": 719303, "vs25_rooms": 5, "vs25_rev_room": 59834, "y25_rooms": 2, "y25_occ": 0.0625, "y25_rate": 96458, "y25_rev_room": 192916, "y24_rev_room": 287454, "fb_guests": 15, "fb_check": 12818, "rev_fb": 192273, "vs25_rev_fb": 109253, "y25_rev_fb": 83020, "rev_oth": 15083, "vs25_rev_oth": 4917, "y25_rev_oth": 10167, "rev_ttl": 460107, "vs25_rev_ttl": 174004, "y25_rev_ttl": 286103, "vs24_rev_ttl": -110058, "y24_rev_ttl": 570164},
+  {"year": 2026, "month": 4, "day": 9, "wd": "Thu", "type": "Actual", "rooms": 3, "occ": 0.0938, "rate": 75555, "rev_room": 226666, "vs_bdgt_rooms": -6.1, "vs_bdgt_rev_room": -583026, "bdgt_rooms": 9.1, "bdgt_rev_room": 809692, "vs25_rooms": 0, "vs25_rev_room": 167732, "y25_rooms": 3, "y25_occ": 0.0938, "y25_rate": 19645, "y25_rev_room": 58934, "y24_rev_room": 257250, "fb_guests": 2, "fb_check": 22820, "rev_fb": 45640, "vs25_rev_fb": -344807, "y25_rev_fb": 390447, "rev_oth": 18500, "vs25_rev_oth": 14500, "y25_rev_oth": 4000, "rev_ttl": 290806, "vs25_rev_ttl": -162575, "y25_rev_ttl": 453381, "vs24_rev_ttl": -44544, "y24_rev_ttl": 335350},
+  {"year": 2026, "month": 4, "day": 10, "wd": "Fri", "type": "Actual", "rooms": 16, "occ": 0.5, "rate": 73646, "rev_room": 1178334, "vs_bdgt_rooms": 4.9, "vs_bdgt_rev_room": 516985, "bdgt_rooms": 11.1, "bdgt_rev_room": 661349, "vs25_rooms": 11, "vs25_rev_room": 942043, "y25_rooms": 5, "y25_occ": 0.1562, "y25_rate": 47258, "y25_rev_room": 236291, "y24_rev_room": 280917, "fb_guests": 121, "fb_check": 11989, "rev_fb": 1450690, "vs25_rev_fb": 1404900, "y25_rev_fb": 45790, "rev_oth": 24167, "vs25_rev_oth": 24167, "y25_rev_oth": 0, "rev_ttl": 2653191, "vs25_rev_ttl": 2371110, "y25_rev_ttl": 282081, "vs24_rev_ttl": 2137449, "y24_rev_ttl": 515742},
+  {"year": 2026, "month": 4, "day": 11, "wd": "Sat", "type": "Actual", "rooms": 26, "occ": 0.8125, "rate": 62563, "rev_room": 1626627, "vs_bdgt_rooms": 9.8, "vs_bdgt_rev_room": 408499, "bdgt_rooms": 16.2, "bdgt_rev_room": 1218128, "vs25_rooms": 21, "vs25_rev_room": 1250835, "y25_rooms": 5, "y25_occ": 0.1562, "y25_rate": 75158, "y25_rev_room": 375792, "y24_rev_room": 115917, "fb_guests": 169, "fb_check": 8984, "rev_fb": 1518307, "vs25_rev_fb": 1165822, "y25_rev_fb": 352485, "rev_oth": 76000, "vs25_rev_oth": 29667, "y25_rev_oth": 46333, "rev_ttl": 3220934, "vs25_rev_ttl": 2446323, "y25_rev_ttl": 774610, "vs24_rev_ttl": 2983042, "y24_rev_ttl": 237892},
+  {"year": 2026, "month": 4, "day": 12, "wd": "Sun", "type": "Actual", "rooms": 12, "occ": 0.375, "rate": 54326, "rev_room": 651917, "vs_bdgt_rooms": 2.9, "vs_bdgt_rev_room": -128267, "bdgt_rooms": 9.1, "bdgt_rev_room": 780184, "vs25_rooms": -1, "vs25_rev_room": -470375, "y25_rooms": 13, "y25_occ": 0.4062, "y25_rate": 86330, "y25_rev_room": 1122292, "y24_rev_room": 340625, "fb_guests": 44, "fb_check": 13326, "rev_fb": 586343, "vs25_rev_fb": -232827, "y25_rev_fb": 819170, "rev_oth": 49000, "vs25_rev_oth": 27833, "y25_rev_oth": 21167, "rev_ttl": 1287260, "vs25_rev_ttl": -675368, "y25_rev_ttl": 1962629, "vs24_rev_ttl": 899665, "y24_rev_ttl": 387595},
+  {"year": 2026, "month": 4, "day": 13, "wd": "Mon", "type": "Actual", "rooms": 18, "occ": 0.5625, "rate": 34109, "rev_room": 613959, "vs_bdgt_rooms": 8.9, "vs_bdgt_rev_room": 16399, "bdgt_rooms": 9.1, "bdgt_rev_room": 597560, "vs25_rooms": 10, "vs25_rev_room": -206458, "y25_rooms": 8, "y25_occ": 0.25, "y25_rate": 102552, "y25_rev_room": 820417, "y24_rev_room": 596458, "fb_guests": 51, "fb_check": 7668, "rev_fb": 391063, "vs25_rev_fb": -221337, "y25_rev_fb": 612400, "rev_oth": 14500, "vs25_rev_oth": 3583, "y25_rev_oth": 10917, "rev_ttl": 1019522, "vs25_rev_ttl": -424211, "y25_rev_ttl": 1443734, "vs24_rev_ttl": -88436, "y24_rev_ttl": 1107958},
+  {"year": 2026, "month": 4, "day": 14, "wd": "Tue", "type": "Actual", "rooms": 7, "occ": 0.2188, "rate": 41637, "rev_room": 291458, "vs_bdgt_rooms": -3.1, "vs_bdgt_rev_room": -339015, "bdgt_rooms": 10.1, "bdgt_rev_room": 630473, "vs25_rooms": 2, "vs25_rev_room": -207086, "y25_rooms": 5, "y25_occ": 0.1562, "y25_rate": 99709, "y25_rev_room": 498544, "y24_rev_room": 114121, "fb_guests": 29, "fb_check": 13177, "rev_fb": 382120, "vs25_rev_fb": 235017, "y25_rev_fb": 147103, "rev_oth": 5667, "vs25_rev_oth": 1417, "y25_rev_oth": 4250, "rev_ttl": 679245, "vs25_rev_ttl": 29347, "y25_rev_ttl": 649897, "vs24_rev_ttl": 127764, "y24_rev_ttl": 551481},
+  {"year": 2026, "month": 4, "day": 15, "wd": "Wed", "type": "Actual", "rooms": 7, "occ": 0.2188, "rate": 44804, "rev_room": 313625, "vs_bdgt_rooms": -3.1, "vs_bdgt_rev_room": -483605, "bdgt_rooms": 10.1, "bdgt_rev_room": 797230, "vs25_rooms": 1, "vs25_rev_room": -292211, "y25_rooms": 6, "y25_occ": 0.1875, "y25_rate": 100973, "y25_rev_room": 605836, "y24_rev_room": 107662, "fb_guests": 18, "fb_check": 13986, "rev_fb": 251743, "vs25_rev_fb": -26317, "y25_rev_fb": 278060, "rev_oth": 15750, "vs25_rev_oth": 15750, "y25_rev_oth": 0, "rev_ttl": 581118, "vs25_rev_ttl": -302778, "y25_rev_ttl": 883896, "vs24_rev_ttl": 296631, "y24_rev_ttl": 284488},
+  {"year": 2026, "month": 4, "day": 16, "wd": "Thu", "type": "Actual", "rooms": 14, "occ": 0.4375, "rate": 54580, "rev_room": 764125, "vs_bdgt_rooms": 4.9, "vs_bdgt_rev_room": 81231, "bdgt_rooms": 9.1, "bdgt_rev_room": 682894, "vs25_rooms": 1, "vs25_rev_room": -69124, "y25_rooms": 13, "y25_occ": 0.4062, "y25_rate": 64096, "y25_rev_room": 833249, "y24_rev_room": 32662, "fb_guests": 14, "fb_check": 12880, "rev_fb": 180317, "vs25_rev_fb": 45930, "y25_rev_fb": 134387, "rev_oth": 14667, "vs25_rev_oth": 14667, "y25_rev_oth": 0, "rev_ttl": 959108, "vs25_rev_ttl": -8527, "y25_rev_ttl": 967636, "vs24_rev_ttl": 509096, "y24_rev_ttl": 450012},
+  {"year": 2026, "month": 4, "day": 17, "wd": "Fri", "type": "Actual", "rooms": 28, "occ": 0.875, "rate": 55541, "rev_room": 1555142, "vs_bdgt_rooms": 16.9, "vs_bdgt_rev_room": 733561, "bdgt_rooms": 11.1, "bdgt_rev_room": 821581, "vs25_rooms": 15, "vs25_rev_room": 814935, "y25_rooms": 13, "y25_occ": 0.4062, "y25_rate": 56939, "y25_rev_room": 740207, "y24_rev_room": 58333, "fb_guests": 101, "fb_check": 14343, "rev_fb": 1448634, "vs25_rev_fb": 899377, "y25_rev_fb": 549257, "rev_oth": 26000, "vs25_rev_oth": 26000, "y25_rev_oth": 0, "rev_ttl": 3029776, "vs25_rev_ttl": 1740312, "y25_rev_ttl": 1289464, "vs24_rev_ttl": 2925662, "y24_rev_ttl": 104113},
+  {"year": 2026, "month": 4, "day": 18, "wd": "Sat", "type": "Actual", "rooms": 31, "occ": 0.9688, "rate": 58319, "rev_room": 1807891, "vs_bdgt_rooms": 14.8, "vs_bdgt_rev_room": 845722, "bdgt_rooms": 16.2, "bdgt_rev_room": 962169, "vs25_rooms": 17, "vs25_rev_room": 849559, "y25_rooms": 14, "y25_occ": 0.4375, "y25_rate": 68452, "y25_rev_room": 958332, "y24_rev_room": 283608, "fb_guests": 116, "fb_check": 13907, "rev_fb": 1613246, "vs25_rev_fb": 1031842, "y25_rev_fb": 581403, "rev_oth": 352554, "vs25_rev_oth": 299104, "y25_rev_oth": 53450, "rev_ttl": 3773691, "vs25_rev_ttl": 2180506, "y25_rev_ttl": 1593185, "vs24_rev_ttl": 3091248, "y24_rev_ttl": 682443},
+  {"year": 2026, "month": 4, "day": 19, "wd": "Sun", "type": "Actual", "rooms": 11, "occ": 0.3438, "rate": 43265, "rev_room": 475917, "vs_bdgt_rooms": 1.9, "vs_bdgt_rev_room": 71511, "bdgt_rooms": 9.1, "bdgt_rev_room": 404406, "vs25_rooms": -1, "vs25_rev_room": -396166, "y25_rooms": 12, "y25_occ": 0.375, "y25_rate": 72674, "y25_rev_room": 872083, "y24_rev_room": 364442, "fb_guests": 84, "fb_check": 10966, "rev_fb": 921170, "vs25_rev_fb": -120913, "y25_rev_fb": 1042083, "rev_oth": 96750, "vs25_rev_oth": 91417, "y25_rev_oth": 5333, "rev_ttl": 1493837, "vs25_rev_ttl": -425663, "y25_rev_ttl": 1919500, "vs24_rev_ttl": 969785, "y24_rev_ttl": 524052},
+  {"year": 2026, "month": 4, "day": 20, "wd": "Mon", "type": "Actual", "rooms": 12, "occ": 0.375, "rate": 50927, "rev_room": 611124, "vs_bdgt_rooms": 2.9, "vs_bdgt_rev_room": -69719, "bdgt_rooms": 9.1, "bdgt_rev_room": 680843, "vs25_rooms": 8, "vs25_rev_room": 330915, "y25_rooms": 4, "y25_occ": 0.125, "y25_rate": 70052, "y25_rev_room": 280209, "y24_rev_room": 1654025, "fb_guests": 45, "fb_check": 13432, "rev_fb": 604460, "vs25_rev_fb": 212663, "y25_rev_fb": 391797, "rev_oth": 10000, "vs25_rev_oth": -61250, "y25_rev_oth": 71250, "rev_ttl": 1225584, "vs25_rev_ttl": 482328, "y25_rev_ttl": 743256, "vs24_rev_ttl": -1351671, "y24_rev_ttl": 2577255},
+  {"year": 2026, "month": 4, "day": 21, "wd": "Tue", "type": "Actual", "rooms": 19, "occ": 0.5938, "rate": 45011, "rev_room": 855210, "vs_bdgt_rooms": 8.9, "vs_bdgt_rev_room": 152108, "bdgt_rooms": 10.1, "bdgt_rev_room": 703102, "vs25_rooms": -1, "vs25_rev_room": -33706, "y25_rooms": 20, "y25_occ": 0.625, "y25_rate": 44446, "y25_rev_room": 888916, "y24_rev_room": 418750, "fb_guests": 26, "fb_check": 12687, "rev_fb": 329863, "vs25_rev_fb": -270613, "y25_rev_fb": 600477, "rev_oth": 23417, "vs25_rev_oth": 19667, "y25_rev_oth": 3750, "rev_ttl": 1208490, "vs25_rev_ttl": -284653, "y25_rev_ttl": 1493143, "vs24_rev_ttl": 418380, "y24_rev_ttl": 790110},
+  {"year": 2026, "month": 4, "day": 22, "wd": "Wed", "type": "Actual", "rooms": 12, "occ": 0.375, "rate": 45062, "rev_room": 540749, "vs_bdgt_rooms": 1.9, "vs_bdgt_rev_room": -152214, "bdgt_rooms": 10.1, "bdgt_rev_room": 692963, "vs25_rooms": 0, "vs25_rev_room": 14832, "y25_rooms": 12, "y25_occ": 0.375, "y25_rate": 43826, "y25_rev_room": 525917, "y24_rev_room": 82500, "fb_guests": 23, "fb_check": 11898, "rev_fb": 273663, "vs25_rev_fb": -375057, "y25_rev_fb": 648720, "rev_oth": 51750, "vs25_rev_oth": 53000, "y25_rev_oth": -1250, "rev_ttl": 866162, "vs25_rev_ttl": -307225, "y25_rev_ttl": 1173387, "vs24_rev_ttl": 750882, "y24_rev_ttl": 115280},
+  {"year": 2026, "month": 4, "day": 23, "wd": "Thu", "type": "Actual", "rooms": 12, "occ": 0.375, "rate": 52056, "rev_room": 624666, "vs_bdgt_rooms": 2.9, "vs_bdgt_rev_room": 37030, "bdgt_rooms": 9.1, "bdgt_rev_room": 587636, "vs25_rooms": -8, "vs25_rev_room": -772418, "y25_rooms": 20, "y25_occ": 0.625, "y25_rate": 69854, "y25_rev_room": 1397084, "y24_rev_room": 165000, "fb_guests": 37, "fb_check": 12386, "rev_fb": 458290, "vs25_rev_fb": -14130, "y25_rev_fb": 472420, "rev_oth": 79667, "vs25_rev_oth": 79667, "y25_rev_oth": 0, "rev_ttl": 1162623, "vs25_rev_ttl": -706881, "y25_rev_ttl": 1869504, "vs24_rev_ttl": 807823, "y24_rev_ttl": 354800},
+  {"year": 2026, "month": 4, "day": 24, "wd": "Fri", "type": "Actual", "rooms": 28, "occ": 0.875, "rate": 56388, "rev_room": 1578877, "vs_bdgt_rooms": 16.9, "vs_bdgt_rev_room": 775840, "bdgt_rooms": 11.1, "bdgt_rev_room": 803037, "vs25_rooms": -5, "vs25_rev_room": -1066123, "y25_rooms": 33, "y25_occ": 1.0312, "y25_rate": 80152, "y25_rev_room": 2645000, "y24_rev_room": 46042, "fb_guests": 170, "fb_check": 10375, "rev_fb": 1763673, "vs25_rev_fb": 1175833, "y25_rev_fb": 587840, "rev_oth": 81000, "vs25_rev_oth": 80000, "y25_rev_oth": 1000, "rev_ttl": 3423550, "vs25_rev_ttl": 189710, "y25_rev_ttl": 3233840, "vs24_rev_ttl": 3117064, "y24_rev_ttl": 306487},
+  {"year": 2026, "month": 4, "day": 25, "wd": "Sat", "type": "Actual", "rooms": 32, "occ": 1, "rate": 56203, "rev_room": 1798502, "vs_bdgt_rooms": 15.8, "vs_bdgt_rev_room": 662555, "bdgt_rooms": 16.2, "bdgt_rev_room": 1135947, "vs25_rooms": 18, "vs25_rev_room": 683918, "y25_rooms": 14, "y25_occ": 0.4375, "y25_rate": 79613, "y25_rev_room": 1114584, "y24_rev_room": 46667, "fb_guests": 141, "fb_check": 7892, "rev_fb": 1112833, "vs25_rev_fb": -1103177, "y25_rev_fb": 2216010, "rev_oth": 90250, "vs25_rev_oth": 78750, "y25_rev_oth": 11500, "rev_ttl": 3001585, "vs25_rev_ttl": -340509, "y25_rev_ttl": 3342094, "vs24_rev_ttl": 2765574, "y24_rev_ttl": 236012},
+  {"year": 2026, "month": 4, "day": 26, "wd": "Sun", "type": "Actual", "rooms": 17, "occ": 0.5312, "rate": 44637, "rev_room": 758833, "vs_bdgt_rooms": 7.9, "vs_bdgt_rev_room": 6586, "bdgt_rooms": 9.1, "bdgt_rev_room": 752247, "vs25_rooms": -6, "vs25_rev_room": -517355, "y25_rooms": 23, "y25_occ": 0.7188, "y25_rate": 55486, "y25_rev_room": 1276188, "y24_rev_room": 495667, "fb_guests": 93, "fb_check": 9458, "rev_fb": 879610, "vs25_rev_fb": -2834335, "y25_rev_fb": 3713945, "rev_oth": 58417, "vs25_rev_oth": 40417, "y25_rev_oth": 18000, "rev_ttl": 1696860, "vs25_rev_ttl": -3311273, "y25_rev_ttl": 5008133, "vs24_rev_ttl": 770763, "y24_rev_ttl": 926097},
+  {"year": 2026, "month": 4, "day": 27, "wd": "Mon", "type": "Actual", "rooms": 16, "occ": 0.5, "rate": 58609, "rev_room": 937750, "vs_bdgt_rooms": 6.9, "vs_bdgt_rev_room": 140035, "bdgt_rooms": 9.1, "bdgt_rev_room": 797715, "vs25_rooms": 9, "vs25_rev_room": 414583, "y25_rooms": 7, "y25_occ": 0.2188, "y25_rate": 74738, "y25_rev_room": 523167, "y24_rev_room": 883750, "fb_guests": 47, "fb_check": 9296, "rev_fb": 436927, "vs25_rev_fb": -286537, "y25_rev_fb": 723463, "rev_oth": 38250, "vs25_rev_oth": 24833, "y25_rev_oth": 13417, "rev_ttl": 1412927, "vs25_rev_ttl": 152880, "y25_rev_ttl": 1260047, "vs24_rev_ttl": 282202, "y24_rev_ttl": 1130725},
+  {"year": 2026, "month": 4, "day": 28, "wd": "Tue", "type": "Actual", "rooms": 22, "occ": 0.6875, "rate": 58159, "rev_room": 1279500, "vs_bdgt_rooms": 11.9, "vs_bdgt_rev_room": 393441, "bdgt_rooms": 10.1, "bdgt_rev_room": 886059, "vs25_rooms": 19, "vs25_rev_room": 1151500, "y25_rooms": 3, "y25_occ": 0.0938, "y25_rate": 42667, "y25_rev_room": 128000, "y24_rev_room": 425833, "fb_guests": 61, "fb_check": 12074, "rev_fb": 736490, "vs25_rev_fb": 676510, "y25_rev_fb": 59980, "rev_oth": 36333, "vs25_rev_oth": 25333, "y25_rev_oth": 11000, "rev_ttl": 2052323, "vs25_rev_ttl": 1853343, "y25_rev_ttl": 198980, "vs24_rev_ttl": 751020, "y24_rev_ttl": 1301303},
+  {"year": 2026, "month": 4, "day": 29, "wd": "Wed", "type": "Forecast", "rooms": 22, "occ": 0.6875, "rate": 52916, "rev_room": 1164153, "vs_bdgt_rooms": 11.9, "vs_bdgt_rev_room": 368407, "bdgt_rooms": 10.1, "bdgt_rev_room": 795746, "vs25_rooms": 17, "vs25_rev_room": 944048, "y25_rooms": 5, "y25_occ": 0.1562, "y25_rate": 44021, "y25_rev_room": 220105, "y24_rev_room": 144167, "fb_guests": 0, "fb_check": 0, "rev_fb": 0, "vs25_rev_fb": null, "y25_rev_fb": 97683, "rev_oth": 0, "vs25_rev_oth": -1000, "y25_rev_oth": 1000, "rev_ttl": 1164153, "vs25_rev_ttl": 845365, "y25_rev_ttl": 318788, "vs24_rev_ttl": 906136, "y24_rev_ttl": 258017},
+  {"year": 2026, "month": 4, "day": 30, "wd": "Thu", "type": "Forecast", "rooms": 18, "occ": 0.5625, "rate": 56008, "rev_room": 1008152, "vs_bdgt_rooms": 8.9, "vs_bdgt_rev_room": 379560, "bdgt_rooms": 9.1, "bdgt_rev_room": 628592, "vs25_rooms": 10, "vs25_rev_room": 597152, "y25_rooms": 8, "y25_occ": 0.25, "y25_rate": 51375, "y25_rev_room": 411000, "y24_rev_room": 434583, "fb_guests": 0, "fb_check": 0, "rev_fb": 0, "vs25_rev_fb": null, "y25_rev_fb": 243767, "rev_oth": 0, "vs25_rev_oth": -1083, "y25_rev_oth": 1083, "rev_ttl": 1008152, "vs25_rev_ttl": 352302, "y25_rev_ttl": 655850, "vs24_rev_ttl": 399149, "y24_rev_ttl": 609003}
+],
+"months":[
+  {"year": 2026, "month": 1, "type": "Actual", "rev_ttl": 37706468, "bdgt_rev_ttl": 32327395, "y25_rev_ttl": 30926212},
+  {"year": 2026, "month": 2, "type": "Actual", "rev_ttl": 21403055, "bdgt_rev_ttl": 26808540, "y25_rev_ttl": 17969492},
+  {"year": 2026, "month": 3, "type": "Actual", "rev_ttl": 31917435, "bdgt_rev_ttl": 30882303, "y25_rev_ttl": 25413424},
+  {"year": 2026, "month": 4, "type": "Forecast", "rev_ttl": 47333142, "bdgt_rev_ttl": 43517882, "y25_rev_ttl": 36327944},
+  {"year": 2026, "month": 5, "type": "Forecast", "rev_ttl": 32155740, "bdgt_rev_ttl": 80443363, "y25_rev_ttl": 64981972},
+  {"year": 2026, "month": 6, "type": "Forecast", "rev_ttl": 20141215, "bdgt_rev_ttl": 91879317, "y25_rev_ttl": 69528354},
+  {"year": 2026, "month": 7, "type": "Forecast", "rev_ttl": 13430243, "bdgt_rev_ttl": 134540252, "y25_rev_ttl": 113341791},
+  {"year": 2026, "month": 8, "type": "Forecast", "rev_ttl": 6003056, "bdgt_rev_ttl": 132258320, "y25_rev_ttl": 113428573},
+  {"year": 2026, "month": 9, "type": "Forecast", "rev_ttl": 1966251, "bdgt_rev_ttl": 70990080, "y25_rev_ttl": 56131242},
+  {"year": 2026, "month": 10, "type": "Forecast", "rev_ttl": 1262126, "bdgt_rev_ttl": 72033734, "y25_rev_ttl": 61557750},
+  {"year": 2026, "month": 11, "type": "Forecast", "rev_ttl": 0, "bdgt_rev_ttl": 49994272, "y25_rev_ttl": 42694752},
+  {"year": 2026, "month": 12, "type": "Forecast", "rev_ttl": 0, "bdgt_rev_ttl": 37287220, "y25_rev_ttl": 29724881}
+]
+};
+
+// ===== Formatters =====
+const fmtAMD = v => v == null ? '—' : new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(Math.round(v));
+const fmtMln = v => {
+  if (v == null) return '—';
+  const a = Math.abs(v);
+  if (a >= 1e6) return (v/1e6).toLocaleString('ru-RU', { maximumFractionDigits: 1 }) + ' млн';
+  if (a >= 1e3) return (v/1e3).toLocaleString('ru-RU', { maximumFractionDigits: 0 }) + ' K';
+  return Math.round(v).toLocaleString('ru-RU');
+};
+const fmtPct = v => v == null ? '—' : (v*100).toFixed(1) + '%';
+const fmtPctDelta = v => (v >= 0 ? '+' : '') + (v*100).toFixed(1) + ' п.п.';
+const fmtNum = v => v == null ? '—' : Math.round(v).toLocaleString('ru-RU');
+const deltaClass = v => v == null || Math.abs(v) < 0.0001 ? 'delta-zero' : (v > 0 ? 'delta-pos' : 'delta-neg');
+const fmtDelta = (v, kind='amd') => {
+  if (v == null) return '<span class="delta-zero">—</span>';
+  const cls = deltaClass(v);
+  const sign = v >= 0 ? '+' : '';
+  let txt;
+  if (kind === 'pct') txt = fmtPctDelta(v);
+  else if (kind === 'mln') txt = sign + fmtMln(v);
+  else if (kind === 'num') txt = sign + fmtNum(v);
+  else txt = sign + fmtAMD(v);
+  return `<span class="${cls}">${txt}</span>`;
+};
+const fmtPctDeltaRel = (cur, prev) => {
+  if (prev == null || prev == 0) return '';
+  const r = (cur - prev) / Math.abs(prev);
+  return ` (${r >= 0 ? '+' : ''}${(r*100).toFixed(1)}%)`;
+};
+const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+const ld = DATA.latest_day, mt = DATA.month;
+
+// ===== Compute synthetic prev_snapshot if missing ===== //
+function buildSyntheticPrev() {
+  // Calculate "yesterday's report" by removing the latest actual day from MTD totals
+  // Capacity per day derived from latest_day: rooms / occ
+  const cap = ld.occ > 0 ? Math.round(ld.rooms / ld.occ) : 32;
+  // Total days in month (from days array)
+  const monthDays = DATA.days.length;
+  const denom = monthDays * cap;
+  const prev_rooms = mt.rooms - (ld.rooms || 0);
+  const prev_rev_room = mt.rev_room - (ld.rev_room || 0);
+  const prev_rev_fb = mt.rev_fb - (ld.rev_fb || 0);
+  const prev_rev_oth = mt.rev_oth - (ld.rev_oth || 0);
+  const prev_rev_ttl = mt.rev_ttl - (ld.rev_ttl || 0);
+  const prev_fb_guests = mt.fb_guests - (ld.fb_guests || 0);
+  // Previous report date = day before latest_day's date
+  const d = new Date(Date.UTC(ld.year, ld.month - 1, ld.day));
+  d.setUTCDate(d.getUTCDate() - 1);
+  const prevDate = d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+  return {
+    is_synthetic: true,
+    report_date: prevDate,
+    month: {
+      rooms: prev_rooms,
+      occ: prev_rooms / denom,
+      rate: prev_rooms > 0 ? prev_rev_room / prev_rooms : 0,
+      rev_room: prev_rev_room,
+      rev_fb: prev_rev_fb,
+      rev_oth: prev_rev_oth,
+      rev_ttl: prev_rev_ttl,
+      fb_guests: prev_fb_guests,
+    }
+  };
+}
+
+const prev = DATA.prev_snapshot || buildSyntheticPrev();
+const isSynthetic = !DATA.prev_snapshot;
+
+// ===== Render Compare Section ===== //
+function fmtDateRu(iso) {
+  if (!iso) return '—';
+  const [y,m,d] = iso.split('-').map(Number);
+  return `${String(d).padStart(2,'0')}.${String(m).padStart(2,'0')}.${y}`;
+}
+document.getElementById('prevReportMeta').innerHTML =
+  `<span class="from">${fmtDateRu(prev.report_date)}</span><span class="arrow">→</span><span class="to">${fmtDateRu(DATA.report_date)}</span>`;
+
+if (isSynthetic) {
+  document.getElementById('changesNotice').innerHTML =
+    `<div class="notice"><strong>Baseline для первого запуска.</strong> Прошлый отчёт ещё не записан, baseline вычислен как «текущие итоги минус данные за ${ld.day} ${monthNames[ld.month-1]}». После следующего автообновления (завтра в 9:10) здесь появится реальное сравнение отчёт-к-отчёту, включая ревизии прогноза.</div>`;
+}
+
+function compareCard(label, prevVal, currVal, fmt = fmtAMD, isPct = false, hero = false) {
+  const delta = currVal - prevVal;
+  const cls = deltaClass(delta);
+  const sign = delta >= 0 ? '+' : '';
+  let deltaTxt;
+  if (isPct) deltaTxt = sign + (delta*100).toFixed(2) + ' п.п.';
+  else deltaTxt = sign + fmt(delta);
+  let pctRel = '';
+  if (!isPct && prevVal && Math.abs(prevVal) > 0.0001) {
+    const r = delta / Math.abs(prevVal) * 100;
+    pctRel = `<span class="pct ${cls}">${r >= 0 ? '+' : ''}${r.toFixed(1)}%</span>`;
+  }
+  return `
+    <div class="compare-card ${hero ? 'hero-card' : ''}">
+      <div class="label">${label}</div>
+      <div class="nums">
+        <span class="prev">${fmt(prevVal)}</span>
+        <span class="arrow">→</span>
+        <span class="current">${fmt(currVal)}</span>
+      </div>
+      <div class="change"><span class="${cls}">${deltaTxt}</span>${pctRel}</div>
+    </div>`;
+}
+
+const prevM = prev.month;
+const compareCards = [
+  compareCard('Total Revenue MTD', prevM.rev_ttl, mt.rev_ttl, fmtMln, false, true),
+  compareCard('Room Revenue MTD', prevM.rev_room, mt.rev_room, fmtMln),
+  compareCard('F&B Revenue MTD', prevM.rev_fb, mt.rev_fb, fmtMln),
+  compareCard('Other Revenue MTD', prevM.rev_oth, mt.rev_oth, fmtMln),
+  compareCard('Rooms Sold MTD', prevM.rooms, mt.rooms, fmtNum),
+  compareCard('F&B Guests MTD', prevM.fb_guests, mt.fb_guests, fmtNum),
+  compareCard('Occupancy MTD', prevM.occ, mt.occ, fmtPct, true),
+  compareCard('Av. Rate MTD', prevM.rate, mt.rate, fmtAMD),
+];
+document.getElementById('compareGrid').innerHTML = compareCards.join('');
+
+// ===== Hero ===== //
+document.getElementById('reportDateLabel').textContent =
+  String(ld.day).padStart(2,'0') + '.' + String(ld.month).padStart(2,'0') + '.' + ld.year;
+document.getElementById('heroDate').textContent = ld.day + ' ' + monthNames[ld.month-1] + ' ' + ld.year;
+const rel25 = mt.y25_rev_ttl > 0 ? ((mt.rev_ttl - mt.y25_rev_ttl) / mt.y25_rev_ttl * 100) : 0;
+document.getElementById('heroLine').innerHTML =
+  `<span class="accent">Total Revenue MTD</span><br>${fmtMln(mt.rev_ttl)} <span class="${rel25>=0?'green':'red'}">${rel25>=0?'+':''}${rel25.toFixed(1)}%</span>`;
+document.getElementById('heroSub').textContent =
+  `Месяц-к-месяцу: общий рост vs 2025 на ${fmtMln(mt.vs25_rev_ttl)}. Последний actual day — ${ld.day} ${monthNames[ld.month-1]} (${ld.wd}): ${fmtAMD(ld.rev_ttl)}.`;
+
+document.getElementById('dayDateMeta').textContent = ld.day + ' ' + monthNames[ld.month-1] + ', ' + ld.wd;
+document.getElementById('monthLabel').textContent = monthNames[ld.month-1] + ' ' + ld.year;
+
+// ===== Day cards ===== //
+const dayCards = [
+  { label: 'Total Revenue', value: fmtAMD(ld.rev_ttl), hero: true,
+    deltas: [['vs 2025', fmtDelta(ld.vs25_rev_ttl)], ['vs 2024', fmtDelta(ld.vs24_rev_ttl)]] },
+  { label: 'Room Revenue', value: fmtAMD(ld.rev_room),
+    deltas: [['vs Budget', fmtDelta(ld.vs_bdgt_rev_room)], ['vs 2025', fmtDelta(ld.vs25_rev_room)]] },
+  { label: 'F&B Revenue', value: fmtAMD(ld.rev_fb),
+    deltas: [['vs 2025', fmtDelta(ld.vs25_rev_fb)], ['Гостей', fmtNum(ld.fb_guests)]] },
+  { label: 'Other Revenue', value: fmtAMD(ld.rev_oth),
+    deltas: [['vs 2025', fmtDelta(ld.vs25_rev_oth)]] },
+  { label: 'Occupancy', value: fmtPct(ld.occ),
+    deltas: [['vs 2025', fmtDelta(ld.occ - (ld.y25_occ||0), 'pct')], ['Номеров', `${ld.rooms} / ${Math.round(ld.rooms/ld.occ)}`]] },
+  { label: 'Average Rate', value: fmtAMD(ld.rate),
+    deltas: [['vs 2025', fmtDelta(ld.rate - (ld.y25_rate||0))]] },
+];
+document.getElementById('dayCards').innerHTML = dayCards.map(c => `
+  <div class="card ${c.hero?'hero-card':''}">
+    <div class="label">${c.label}</div>
+    <div class="value">${c.value}</div>
+    <div class="deltas">${c.deltas.map(d=>`<div class="row"><span>${d[0]}</span>${d[1]}</div>`).join('')}</div>
+  </div>`).join('');
+
+// ===== MTD cards ===== //
+const mtdCards = [
+  { label: 'Total Revenue MTD', value: fmtMln(mt.rev_ttl), hero: true,
+    deltas: [['vs 2025', fmtDelta(mt.vs25_rev_ttl, 'mln') + fmtPctDeltaRel(mt.rev_ttl, mt.y25_rev_ttl)], ['vs 2024', fmtDelta(mt.vs24_rev_ttl, 'mln')]] },
+  { label: 'Room Revenue MTD', value: fmtMln(mt.rev_room),
+    deltas: [['vs Budget', fmtDelta(mt.vs_bdgt_rev_room, 'mln')], ['vs 2025', fmtDelta(mt.vs25_rev_room, 'mln')]] },
+  { label: 'F&B Revenue MTD', value: fmtMln(mt.rev_fb),
+    deltas: [['vs 2025', fmtDelta(mt.vs25_rev_fb, 'mln')], ['Гостей', fmtNum(mt.fb_guests)]] },
+  { label: 'Other Revenue MTD', value: fmtMln(mt.rev_oth),
+    deltas: [['vs 2025', fmtDelta(mt.vs25_rev_oth, 'mln')]] },
+  { label: 'Occupancy MTD', value: fmtPct(mt.occ),
+    deltas: [['vs 2025', fmtDelta(mt.occ - (mt.y25_occ||0), 'pct')], ['Номеров', fmtNum(mt.rooms)]] },
+  { label: 'Av. Rate MTD', value: fmtAMD(mt.rate),
+    deltas: [['vs 2025', fmtDelta(mt.rate - (mt.y25_rate||0))]] },
+];
+document.getElementById('mtdCards').innerHTML = mtdCards.map(c => `
+  <div class="card ${c.hero?'hero-card':''}">
+    <div class="label">${c.label}</div>
+    <div class="value">${c.value}</div>
+    <div class="deltas">${c.deltas.map(d=>`<div class="row"><span>${d[0]}</span>${d[1]}</div>`).join('')}</div>
+  </div>`).join('');
+
+// ===== Charts setup ===== //
+Chart.defaults.color = 'rgba(255,255,255,0.55)';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif';
+
+const days = DATA.days;
+const labels = days.map(d => d.day);
+const cur26 = days.map(d => d.rev_ttl || 0);
+const cur25 = days.map(d => d.y25_rev_ttl || 0);
+const cur24 = days.map(d => d.y24_rev_ttl || 0);
+const lastActualIdx = days.map(d => d.type).lastIndexOf('Actual');
+
+document.getElementById('dailyHead').innerHTML = `<span class="accent">Текущий месяц</span> · ${fmtMln(mt.rev_ttl)}`;
+document.getElementById('mixHead').innerHTML = `<span class="accent">${monthNames[ld.month-1]}</span> · ${fmtMln(mt.rev_ttl)}`;
+document.getElementById('occHead').innerHTML = `<span class="accent">Avg MTD</span> · ${fmtPct(mt.occ)}`;
+document.getElementById('rateHead').innerHTML = `<span class="accent">Avg MTD</span> · ${fmtAMD(mt.rate)}`;
+
+function makeBarGradient(ctx, chartArea) {
+  const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+  g.addColorStop(0, 'rgba(255,255,255,0.95)');
+  g.addColorStop(1, 'rgba(255,255,255,0.08)');
+  return g;
+}
+
+new Chart(document.getElementById('chartRevDaily'), {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [
+      { label: '2026', data: cur26, borderRadius: 2, borderSkipped: false,
+        backgroundColor: function(ctx) {
+          const chart = ctx.chart;
+          const {ctx: c, chartArea} = chart;
+          if (!chartArea) return 'rgba(255,255,255,0.5)';
+          const i = ctx.dataIndex;
+          if (i > lastActualIdx) {
+            const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+            g.addColorStop(0, 'rgba(255,255,255,0.45)'); g.addColorStop(1, 'rgba(255,255,255,0.04)');
+            return g;
+          }
+          return makeBarGradient(c, chartArea);
+        }
+      },
+      { label: '2025', type: 'line', data: cur25, borderColor: 'rgba(255,255,255,0.42)',
+        borderWidth: 1.5, pointRadius: 0, tension: 0.35, borderDash: [4,3], fill: false }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 8, boxHeight: 8, font: { size: 11, weight: '500' }, color: 'rgba(255,255,255,0.55)' } },
+      tooltip: { backgroundColor: '#0a0a0a', borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1, padding: 10,
+        callbacks: { label: ctx => ctx.dataset.label + ': ' + fmtAMD(ctx.parsed.y) } }
+    },
+    scales: {
+      y: { ticks: { callback: v => fmtMln(v), color: 'rgba(255,255,255,0.4)', font: { size: 10 } },
+        grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false } },
+      x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 10 } }, border: { color: 'rgba(255,255,255,0.1)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('chartMix'), {
+  type: 'doughnut',
+  data: { labels: ['Rooms', 'F&B', 'Other'], datasets: [{
+    data: [mt.rev_room, mt.rev_fb, mt.rev_oth],
+    backgroundColor: ['rgba(255,255,255,0.92)', 'rgba(255,255,255,0.5)', 'rgba(255,255,255,0.22)'],
+    borderColor: '#000', borderWidth: 3
+  }]},
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '68%',
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 8, boxHeight: 8, font: { size: 11 }, color: 'rgba(255,255,255,0.55)' } },
+      tooltip: { backgroundColor: '#0a0a0a', borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1, padding: 10,
+        callbacks: { label: ctx => {
+          const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+          return ctx.label + ': ' + fmtMln(ctx.parsed) + ' (' + (ctx.parsed/total*100).toFixed(1) + '%)';
+        } } }
+    }
+  }
+});
+
+new Chart(document.getElementById('chartOcc'), {
+  type: 'line',
+  data: { labels, datasets: [
+    { label: '2026', data: days.map(d => (d.occ||0)*100),
+      borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.06)',
+      borderWidth: 2, tension: 0.3, pointRadius: 0, pointHoverRadius: 4, fill: true },
+    { label: '2025', data: days.map(d => (d.y25_occ||0)*100),
+      borderColor: 'rgba(255,255,255,0.42)', borderWidth: 1.5,
+      borderDash: [4,3], tension: 0.3, pointRadius: 0, fill: false }
+  ]},
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 8, boxHeight: 8, font: { size: 11 }, color: 'rgba(255,255,255,0.55)' } },
+      tooltip: { backgroundColor: '#0a0a0a', borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1, padding: 10,
+        callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%' } }
+    },
+    scales: {
+      y: { ticks: { callback: v => v + '%', color: 'rgba(255,255,255,0.4)', font: { size: 10 } },
+        grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false }, beginAtZero: true, max: 100 },
+      x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 10 } }, border: { color: 'rgba(255,255,255,0.1)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('chartRate'), {
+  type: 'line',
+  data: { labels, datasets: [
+    { label: '2026', data: days.map(d => d.rate || null),
+      borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.06)',
+      borderWidth: 2, tension: 0.3, pointRadius: 0, pointHoverRadius: 4, fill: true, spanGaps: true },
+    { label: '2025', data: days.map(d => d.y25_rate || null),
+      borderColor: 'rgba(255,255,255,0.42)', borderWidth: 1.5,
+      borderDash: [4,3], tension: 0.3, pointRadius: 0, fill: false, spanGaps: true }
+  ]},
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 8, boxHeight: 8, font: { size: 11 }, color: 'rgba(255,255,255,0.55)' } },
+      tooltip: { backgroundColor: '#0a0a0a', borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1, padding: 10,
+        callbacks: { label: ctx => ctx.dataset.label + ': ' + fmtAMD(ctx.parsed.y) } }
+    },
+    scales: {
+      y: { ticks: { callback: v => fmtMln(v), color: 'rgba(255,255,255,0.4)', font: { size: 10 } },
+        grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false } },
+      x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 10 } }, border: { color: 'rgba(255,255,255,0.1)' } }
+    }
+  }
+});
+
+const months = DATA.months;
+const monthShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+new Chart(document.getElementById('chartYear'), {
+  type: 'bar',
+  data: { labels: months.map(m => monthShort[m.month-1]), datasets: [
+    { label: '2026', data: months.map(m => m.rev_ttl), borderRadius: 2, borderSkipped: false,
+      backgroundColor: function(ctx) {
+        const chart = ctx.chart;
+        const {ctx: c, chartArea} = chart;
+        if (!chartArea) return 'rgba(255,255,255,0.5)';
+        const m = months[ctx.dataIndex];
+        if (m.type === 'Forecast') {
+          const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          g.addColorStop(0, 'rgba(255,255,255,0.42)'); g.addColorStop(1, 'rgba(255,255,255,0.04)');
+          return g;
+        }
+        return makeBarGradient(c, chartArea);
+      }
+    },
+    { label: 'Бюджет', type: 'line', data: months.map(m => m.bdgt_rev_ttl),
+      borderColor: 'rgba(255,255,255,0.6)', borderWidth: 1.5, pointRadius: 0, tension: 0.25, fill: false },
+    { label: '2025', type: 'line', data: months.map(m => m.y25_rev_ttl),
+      borderColor: 'rgba(255,255,255,0.32)', borderWidth: 1.5, borderDash: [4,3], pointRadius: 0, tension: 0.25, fill: false }
+  ]},
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 8, boxHeight: 8, font: { size: 11 }, color: 'rgba(255,255,255,0.55)' } },
+      tooltip: { backgroundColor: '#0a0a0a', borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1, padding: 10,
+        callbacks: { label: ctx => ctx.dataset.label + ': ' + fmtAMD(ctx.parsed.y) } }
+    },
+    scales: {
+      y: { ticks: { callback: v => fmtMln(v), color: 'rgba(255,255,255,0.4)', font: { size: 10 } },
+        grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false } },
+      x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.55)', font: { size: 10, weight: '500' } }, border: { color: 'rgba(255,255,255,0.1)' } }
+    }
+  }
+});
+
+// ===== Day-by-day table ===== //
+function renderTable(view) {
+  const isWeekend = wd => wd === 'Sat' || wd === 'Sun';
+  let head, rows;
+  if (view === 'ttl') {
+    head = ['День','День нед.','Тип','TTL Revenue','vs 2025','vs 2024','2025','2024'];
+    rows = days.map(d => [d.day, d.wd, d.type, fmtAMD(d.rev_ttl), fmtDelta(d.vs25_rev_ttl), fmtDelta(d.vs24_rev_ttl), fmtAMD(d.y25_rev_ttl), fmtAMD(d.y24_rev_ttl)]);
+    rows.push(['TTL', '—', '—', fmtAMD(mt.rev_ttl), fmtDelta(mt.vs25_rev_ttl), fmtDelta(mt.vs24_rev_ttl), fmtAMD(mt.y25_rev_ttl), fmtAMD(mt.y24_rev_ttl)]);
+  } else if (view === 'rooms') {
+    head = ['День','День нед.','Тип','Rooms','OCC','Av.Rate','Room Rev','vs Budget','vs 2025'];
+    rows = days.map(d => [d.day, d.wd, d.type, d.rooms, fmtPct(d.occ), fmtAMD(d.rate), fmtAMD(d.rev_room), fmtDelta(d.vs_bdgt_rev_room), fmtDelta(d.vs25_rev_room)]);
+    rows.push(['TTL','—','—', mt.rooms, fmtPct(mt.occ), fmtAMD(mt.rate), fmtAMD(mt.rev_room), fmtDelta(mt.vs_bdgt_rev_room), fmtDelta(mt.vs25_rev_room)]);
+  } else if (view === 'fb') {
+    head = ['День','День нед.','Тип','Гостей','Av.Check','F&B Rev','vs 2025','2025'];
+    rows = days.map(d => [d.day, d.wd, d.type, fmtNum(d.fb_guests), fmtAMD(d.fb_check), fmtAMD(d.rev_fb), fmtDelta(d.vs25_rev_fb), fmtAMD(d.y25_rev_fb)]);
+    rows.push(['TTL','—','—', fmtNum(mt.fb_guests), fmtAMD(mt.fb_check), fmtAMD(mt.rev_fb), fmtDelta(mt.vs25_rev_fb), fmtAMD(mt.y25_rev_fb)]);
+  } else {
+    head = ['День','День нед.','Тип','Other Rev','vs 2025','2025'];
+    rows = days.map(d => [d.day, d.wd, d.type, fmtAMD(d.rev_oth), fmtDelta(d.vs25_rev_oth), fmtAMD(d.y25_rev_oth)]);
+    rows.push(['TTL','—','—', fmtAMD(mt.rev_oth), fmtDelta(mt.vs25_rev_oth), fmtAMD(mt.y25_rev_oth)]);
+  }
+  const html = '<thead><tr>' + head.map(h => `<th>${h}</th>`).join('') + '</tr></thead>' +
+    '<tbody>' + rows.map((r,i) => {
+      const isTotal = r[0] === 'TTL';
+      const wd = r[1]; const type = r[2];
+      const cls = [isTotal ? 'totals' : '', !isTotal && isWeekend(wd) ? 'weekend' : '', !isTotal && type === 'Forecast' ? 'forecast' : ''].filter(Boolean).join(' ');
+      const cells = r.map((v,j) => {
+        if (j === 2 && !isTotal) return `<td><span class="chip ${type==='Actual'?'chip-actual':'chip-forecast'}">${type}</span></td>`;
+        return `<td>${v}</td>`;
+      }).join('');
+      return `<tr class="${cls}">${cells}</tr>`;
+    }).join('') + '</tbody>';
+  document.getElementById('dayTable').innerHTML = html;
+}
+renderTable('ttl');
+document.querySelectorAll('#tableTabs .tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('#tableTabs .tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    renderTable(t.dataset.view);
+  });
+});
+
+// ===== Excel Export (DT - Corpfile.xlsx) ===== //
+(function() {
+  // CRC32 table
+  const crcTable = (() => {
+    const t = new Uint32Array(256);
+    for (let i = 0; i < 256; i++) {
+      let c = i;
+      for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      t[i] = c >>> 0;
+    }
+    return t;
+  })();
+  function crc32(data) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < data.length; i++) c = crcTable[(c ^ data[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+  const enc = new TextEncoder();
+  const strToBytes = s => enc.encode(s);
+  function w32(a, o, v) { a[o]=v&0xFF; a[o+1]=(v>>>8)&0xFF; a[o+2]=(v>>>16)&0xFF; a[o+3]=(v>>>24)&0xFF; }
+  function w16(a, o, v) { a[o]=v&0xFF; a[o+1]=(v>>>8)&0xFF; }
+
+  // Build a stored (uncompressed) ZIP archive
+  function buildZip(files) {
+    const locals = [];
+    const centrals = [];
+    let offset = 0;
+    for (const f of files) {
+      const name = strToBytes(f.name);
+      const crc = crc32(f.data);
+      const size = f.data.length;
+      const lh = new Uint8Array(30 + name.length);
+      w32(lh, 0, 0x04034b50); w16(lh, 4, 20); w16(lh, 6, 0); w16(lh, 8, 0);
+      w16(lh, 10, 0); w16(lh, 12, 0x21); // mod time/date — Jan 1 1980+
+      w32(lh, 14, crc); w32(lh, 18, size); w32(lh, 22, size);
+      w16(lh, 26, name.length); w16(lh, 28, 0);
+      lh.set(name, 30);
+      locals.push({ header: lh, data: f.data, offset });
+      const ch = new Uint8Array(46 + name.length);
+      w32(ch, 0, 0x02014b50); w16(ch, 4, 20); w16(ch, 6, 20); w16(ch, 8, 0); w16(ch, 10, 0);
+      w16(ch, 12, 0); w16(ch, 14, 0x21);
+      w32(ch, 16, crc); w32(ch, 20, size); w32(ch, 24, size);
+      w16(ch, 28, name.length); w16(ch, 30, 0); w16(ch, 32, 0); w16(ch, 34, 0);
+      w16(ch, 36, 0); w32(ch, 38, 0); w32(ch, 42, offset);
+      ch.set(name, 46);
+      centrals.push(ch);
+      offset += lh.length + size;
+    }
+    const cdSize = centrals.reduce((a, h) => a + h.length, 0);
+    const cdOffset = offset;
+    const eocd = new Uint8Array(22);
+    w32(eocd, 0, 0x06054b50); w16(eocd, 4, 0); w16(eocd, 6, 0);
+    w16(eocd, 8, files.length); w16(eocd, 10, files.length);
+    w32(eocd, 12, cdSize); w32(eocd, 16, cdOffset); w16(eocd, 20, 0);
+    const total = offset + cdSize + 22;
+    const out = new Uint8Array(total);
+    let p = 0;
+    for (const lh of locals) {
+      out.set(lh.header, p); p += lh.header.length;
+      out.set(lh.data, p); p += lh.data.length;
+    }
+    for (const ch of centrals) { out.set(ch, p); p += ch.length; }
+    out.set(eocd, p);
+    return out;
+  }
+
+  function xe(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  }
+  function colLetter(n) {
+    let s = ''; n++;
+    while (n > 0) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = Math.floor((n - 1) / 26); }
+    return s;
+  }
+  function buildSheet(rows) {
+    let xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+    rows.forEach((row, ri) => {
+      xml += `<row r="${ri+1}">`;
+      (row || []).forEach((val, ci) => {
+        if (val == null || val === '') return;
+        const ref = colLetter(ci) + (ri+1);
+        if (typeof val === 'number' && isFinite(val)) {
+          xml += `<c r="${ref}"><v>${val}</v></c>`;
+        } else {
+          xml += `<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xe(val)}</t></is></c>`;
+        }
+      });
+      xml += '</row>';
+    });
+    xml += '</sheetData></worksheet>';
+    return xml;
+  }
+  function buildXlsx(sheets) {
+    const files = [];
+    files.push({ name: '[Content_Types].xml', data: strToBytes(
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/>' +
+      '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+      sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('') +
+      '</Types>')
+    });
+    files.push({ name: '_rels/.rels', data: strToBytes(
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
+      '</Relationships>')
+    });
+    files.push({ name: 'xl/_rels/workbook.xml.rels', data: strToBytes(
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('') +
+      '</Relationships>')
+    });
+    files.push({ name: 'xl/workbook.xml', data: strToBytes(
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+      '<sheets>' +
+      sheets.map((s,i)=>`<sheet name="${xe(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('') +
+      '</sheets></workbook>')
+    });
+    sheets.forEach((s, i) => {
+      files.push({ name: `xl/worksheets/sheet${i+1}.xml`, data: strToBytes(buildSheet(s.rows)) });
+    });
+    return buildZip(files);
+  }
+
+  function exportXlsx() {
+    const btn = document.getElementById('exportBtn');
+    btn.disabled = true;
+    try {
+      const monthName = monthNames[ld.month-1];
+      const reportDateStr = `${String(ld.day).padStart(2,'0')}.${String(ld.month).padStart(2,'0')}.${ld.year}`;
+
+      // --- Sheet 1: MTD Summary ---
+      const summaryRows = [
+        ['Dilijan Tun — Daily Report'],
+        ['Период', `${monthName} ${ld.year}`],
+        ['Дата отчёта', reportDateStr],
+        [],
+        ['Накопительно за месяц (MTD)'],
+        ['Метрика','Значение','vs Бюджет','vs 2025','vs 2024','2025','2024'],
+        ['Total Revenue', mt.rev_ttl, null, mt.vs25_rev_ttl, mt.vs24_rev_ttl, mt.y25_rev_ttl, mt.y24_rev_ttl],
+        ['Room Revenue', mt.rev_room, mt.vs_bdgt_rev_room, mt.vs25_rev_room, null, mt.y25_rev_room, mt.y24_rev_room],
+        ['F&B Revenue', mt.rev_fb, null, mt.vs25_rev_fb, null, mt.y25_rev_fb, null],
+        ['Other Revenue', mt.rev_oth, null, mt.vs25_rev_oth, null, mt.y25_rev_oth, null],
+        ['Rooms Sold', mt.rooms, mt.vs_bdgt_rooms, mt.rooms - (mt.y25_rooms||0), null, mt.y25_rooms, null],
+        ['Occupancy', mt.occ, null, mt.occ - (mt.y25_occ||0), null, mt.y25_occ, null],
+        ['Average Rate', mt.rate, null, mt.rate - (mt.y25_rate||0), null, mt.y25_rate, null],
+        ['F&B Guests', mt.fb_guests, null, null, null, null, null],
+        ['Av. Check F&B', mt.fb_check, null, null, null, null, null],
+        [],
+        ['Последний день — детализация'],
+        ['Метрика','Значение'],
+        ['День', `${ld.day} ${monthName} ${ld.year} (${ld.wd})`],
+        ['Тип', ld.type],
+        ['Total Revenue', ld.rev_ttl],
+        ['Room Revenue', ld.rev_room],
+        ['F&B Revenue', ld.rev_fb],
+        ['Other Revenue', ld.rev_oth],
+        ['Rooms Sold', ld.rooms],
+        ['Occupancy', ld.occ],
+        ['Average Rate', ld.rate],
+        ['F&B Guests', ld.fb_guests],
+        ['Av. Check F&B', ld.fb_check],
+      ];
+
+      // --- Sheet 2: Daily ---
+      const dailyHeader = ['День','День нед.','Тип',
+        'Rooms Sold','OCC','Av.Rate','Room Revenue','vs Бюджет (rev_room)','vs 2025 (rev_room)','2025 Rooms','2025 Rev_room','2024 Rev_room',
+        'F&B Гости','Av.Check','F&B Revenue','vs 2025 F&B','2025 F&B',
+        'Other Revenue','vs 2025 Other','2025 Other',
+        'Total Revenue','vs 2025 TTL','vs 2024 TTL','2025 TTL','2024 TTL'];
+      const dailyRows = [dailyHeader];
+      DATA.days.forEach(d => {
+        dailyRows.push([
+          d.day, d.wd, d.type,
+          d.rooms, d.occ, d.rate, d.rev_room, d.vs_bdgt_rev_room, d.vs25_rev_room, d.y25_rooms, d.y25_rev_room, d.y24_rev_room,
+          d.fb_guests, d.fb_check, d.rev_fb, d.vs25_rev_fb, d.y25_rev_fb,
+          d.rev_oth, d.vs25_rev_oth, d.y25_rev_oth,
+          d.rev_ttl, d.vs25_rev_ttl, d.vs24_rev_ttl, d.y25_rev_ttl, d.y24_rev_ttl
+        ]);
+      });
+      dailyRows.push([
+        'TTL','—','—',
+        mt.rooms, mt.occ, mt.rate, mt.rev_room, mt.vs_bdgt_rev_room, mt.vs25_rev_room, mt.y25_rooms, mt.y25_rev_room, mt.y24_rev_room,
+        mt.fb_guests, mt.fb_check, mt.rev_fb, mt.vs25_rev_fb, mt.y25_rev_fb,
+        mt.rev_oth, mt.vs25_rev_oth, mt.y25_rev_oth,
+        mt.rev_ttl, mt.vs25_rev_ttl, mt.vs24_rev_ttl, mt.y25_rev_ttl, mt.y24_rev_ttl
+      ]);
+
+      // --- Sheet 3: Monthly ---
+      const monthlyRows = [
+        ['Месяц','Год','Тип','Total Revenue','Бюджет','2025','vs Бюджет','vs 2025']
+      ];
+      DATA.months.forEach(m => {
+        monthlyRows.push([
+          monthNames[m.month-1], m.year, m.type,
+          m.rev_ttl, m.bdgt_rev_ttl, m.y25_rev_ttl,
+          m.rev_ttl - m.bdgt_rev_ttl, m.rev_ttl - m.y25_rev_ttl
+        ]);
+      });
+      const ttlYear = DATA.months.reduce((a, m) => a + (m.rev_ttl||0), 0);
+      const ttlBdgt = DATA.months.reduce((a, m) => a + (m.bdgt_rev_ttl||0), 0);
+      const ttl25 = DATA.months.reduce((a, m) => a + (m.y25_rev_ttl||0), 0);
+      monthlyRows.push(['Год', ld.year, '—', ttlYear, ttlBdgt, ttl25, ttlYear - ttlBdgt, ttlYear - ttl25]);
+
+      const xlsxBytes = buildXlsx([
+        { name: 'MTD Summary', rows: summaryRows },
+        { name: 'Daily', rows: dailyRows },
+        { name: 'Monthly', rows: monthlyRows },
+      ]);
+
+      const blob = new Blob([xlsxBytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'DT - Corpfile.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      console.error('xlsx export failed', e);
+      alert('Не удалось сформировать Excel-файл: ' + (e && e.message ? e.message : e));
+    } finally {
+      setTimeout(() => { btn.disabled = false; }, 300);
+    }
+  }
+
+  document.getElementById('exportBtn').addEventListener('click', exportXlsx);
+})();
+</script>
+</body>
+</html>
